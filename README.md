@@ -80,17 +80,18 @@ WebKit is opt-in locally (`PW_WEBKIT=1`) because its prebuilt binary segfaults o
 
 ## Deploying
 
-The build is fully static — any static host works, free.
+The build is fully static — any static host works, free. See **[DEPLOY.md](DEPLOY.md)**
+for the exact steps.
 
-**Cloudflare Pages** (recommended: free, unlimited bandwidth, global CDN, free custom domain later):
+The short version, once you have run `npx wrangler login`:
 
-1. Push this repo to GitHub.
-2. Cloudflare dashboard → Workers & Pages → Create → Pages → connect the repo.
-3. Build command `npm run build`, output directory `dist`.
+```bash
+npm run deploy
+```
 
-`public/_headers` sets immutable caching on the versioned data, fonts and assets while keeping `index.html` revalidating, so a deploy is picked up immediately but nothing else is ever re-downloaded. `public/_redirects` provides the SPA fallback. Both files are understood by Cloudflare Pages and Netlify.
-
-Nothing hardcodes a domain, so attaching a custom one later needs no code change.
+That builds and publishes to Cloudflare Pages. `public/_headers` and
+`public/_redirects` handle caching and the SPA fallback, and nothing hardcodes a
+domain, so attaching a custom one later needs no code change.
 
 ## A note on V'Zot HaBerachah
 
