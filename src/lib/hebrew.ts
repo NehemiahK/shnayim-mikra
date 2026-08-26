@@ -113,3 +113,35 @@ export function runsToText(runs: readonly RichRun[]): string {
     .replace(/\s+/gu, ' ')
     .trim();
 }
+
+/**
+ * Matches a leading Hebrew phrase that runs up to the first Latin letter.
+ * The lookahead requires an actual Hebrew letter before any Latin one, so a
+ * comment opening with punctuation alone is not mistaken for a lemma.
+ */
+const LEADING_LEMMA =
+  /^(?=[^A-Za-z]*[\u0590-\u05FF])([\u0590-\u05FF\s.,'"\u2026\u05F3\u05F4()[\]\-\u2013\u2014]+)(?=[A-Za-z])/u;
+
+/**
+ * Rashi's English translation almost always opens with the Hebrew dibur
+ * hamatchil before switching to English. Left inline it reads as a rendering
+ * fault — an RTL phrase with no marking at the head of an LTR paragraph — so we
+ * lift it out and let the renderer style it the way the Hebrew side is styled.
+ */
+export function splitLeadingLemma(runs: readonly RichRun[]): {
+  lemma: string;
+  rest: RichRun[];
+} {
+  const first = runs[0];
+  if (!first) return { lemma: '', rest: [] };
+
+  const match = LEADING_LEMMA.exec(first.t);
+  const lemma = match?.[1]?.trim() ?? '';
+  if (lemma === '') return { lemma: '', rest: [...runs] };
+
+  const remainder = first.t.slice(match?.[0].length ?? 0).trim();
+  const rest: RichRun[] = [];
+  if (remainder !== '') rest.push({ ...first, t: remainder });
+  rest.push(...runs.slice(1));
+  return { lemma, rest };
+}

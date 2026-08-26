@@ -2,7 +2,7 @@ import { memo } from 'react';
 import type { ParshaText, RashiText } from '../lib/types.js';
 import type { ReadingUnit } from '../lib/reading-units.js';
 import { renderHebrew, type HebrewStyle } from '../lib/hebrew.js';
-import { RichText } from './RichText.js';
+import { RashiComments } from './RashiComments.js';
 import type { TranslationKey } from '../i18n.js';
 
 export interface AliyahBlockCardProps {
@@ -10,6 +10,7 @@ export interface AliyahBlockCardProps {
   parsha: ParshaText;
   hebrewStyle: HebrewStyle;
   showTranslation: boolean;
+  rashiEnglish: boolean;
   done: boolean;
   rashi: RashiText | undefined;
   rashiLoading: boolean;
@@ -23,6 +24,7 @@ function AliyahBlockCardImpl({
   parsha,
   hebrewStyle,
   showTranslation,
+  rashiEnglish,
   done,
   rashi,
   rashiLoading,
@@ -80,10 +82,11 @@ function AliyahBlockCardImpl({
                 {kind === 'mikra' && <p className="hebrew">{renderHebrew(verse.he, hebrewStyle)}</p>}
                 {kind === 'onkelos' && <p className="hebrew-sm">{verse.on}</p>}
                 {kind === 'rashi' && (
-                  <RashiForVerse
+                  <RashiComments
                     comments={rashi?.comments[key]}
                     loading={rashiLoading}
-                    empty={t('noRashi')}
+                    englishOpen={rashiEnglish}
+                    t={t}
                   />
                 )}
                 {showTranslation && kind === 'mikra' && (
@@ -95,33 +98,6 @@ function AliyahBlockCardImpl({
         })}
       </div>
     </article>
-  );
-}
-
-function RashiForVerse({
-  comments,
-  loading,
-  empty,
-}: {
-  comments: RashiText['comments'][string] | undefined;
-  loading: boolean;
-  empty: string;
-}): React.JSX.Element {
-  if (loading) return <p className="text-sm text-[var(--color-muted)]">…</p>;
-  if (!comments || comments.length === 0) {
-    return <p className="text-sm italic text-[var(--color-muted)]">{empty}</p>;
-  }
-  return (
-    <div className="space-y-2">
-      {comments.map((comment, i) => (
-        <div key={i}>
-          {comment.he.length > 0 && <RichText runs={comment.he} className="hebrew-sm" />}
-          {comment.en.length > 0 && (
-            <RichText runs={comment.en} className="english mt-1 text-[var(--color-muted)]" />
-          )}
-        </div>
-      ))}
-    </div>
   );
 }
 

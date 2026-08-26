@@ -95,7 +95,9 @@ test.describe('Rashi and translation', () => {
   test('expanding a verse loads Rashi and the translation', async ({ page }) => {
     await page.goto(`/p/${PARSHA}`);
     const card = page.locator('article[id^="unit-"]').first();
-    const expand = card.locator('button[aria-expanded]');
+    // Scoped by aria-controls: the card expander and Rashi's English disclosure
+    // are both aria-expanded buttons.
+    const expand = card.locator('button[aria-controls^="detail-"]');
 
     await expect(expand).toHaveAttribute('aria-expanded', 'false');
     await expand.click();
@@ -109,6 +111,11 @@ test.describe('Rashi and translation', () => {
     // The dibur hamatchil is what makes Rashi navigable — it must survive.
     await expect(detail.locator('strong').first()).toBeVisible();
     await expect(detail.locator('strong').first()).toContainText('והיה כי תבוא');
+
+    // Rashi's own English stays behind its disclosure here too.
+    await expect(detail).not.toContainText('This tells us');
+    await detail.getByRole('button', { name: 'English' }).first().click();
+    await expect(detail).toContainText('This tells us');
   });
 
   test('translation can be shown inline under every verse', async ({ page }) => {
@@ -124,7 +131,7 @@ test.describe('settings', () => {
     await setSettings(page, { targum: 'rashi' });
     await page.goto(`/p/${PARSHA}`);
     const card = page.locator('article[id^="unit-"]').first();
-    await expect(card.getByRole('button', { name: 'Rashi 26:1', exact: true })).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Rashi 1 26:1', exact: true })).toBeVisible();
     await expect(card.getByRole('button', { name: 'Onkelos 26:1', exact: true })).toHaveCount(0);
   });
 
@@ -133,6 +140,34 @@ test.describe('settings', () => {
     await page.goto(`/p/${PARSHA}`);
     const card = page.locator('article[id^="unit-"]').first();
     await expect(card.locator('button[aria-pressed]')).toHaveCount(4);
+  });
+
+  test('Rashi keeps its English behind a disclosure', async ({ page }) => {
+    await setSettings(page, { targum: 'rashi' });
+    await page.goto(`/p/${PARSHA}`);
+    const card = page.locator('article[id^="unit-"]').first();
+
+    const english = card.getByRole('button', { name: 'English' }).first();
+    await expect(english).toHaveAttribute('aria-expanded', 'false');
+    await expect(card).not.toContainText('This tells us');
+
+    await english.click();
+    await expect(english).toHaveAttribute('aria-expanded', 'true');
+    await expect(card).toContainText('This tells us');
+
+    await english.click();
+    await expect(card).not.toContainText('This tells us');
+  });
+
+  test('Rashi English can start open', async ({ page }) => {
+    await setSettings(page, { targum: 'rashi', rashiEnglish: true });
+    await page.goto(`/p/${PARSHA}`);
+    const card = page.locator('article[id^="unit-"]').first();
+    await expect(card.getByRole('button', { name: 'English' }).first()).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await expect(card).toContainText('This tells us');
   });
 
   test('aliyah mode reads in blocks instead of verse by verse', async ({ page }) => {

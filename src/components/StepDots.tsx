@@ -25,7 +25,7 @@ export function StepDots({ states, label, onToggle, labels, context }: StepDotsP
             e.stopPropagation();
             onToggle(i);
           }}
-          className={`h-5 w-5 rounded-full border-2 transition-colors ${
+          className={`relative h-5 w-5 rounded-full border-2 transition-colors after:absolute after:-inset-3 after:content-[''] ${
             done
               ? 'border-[var(--color-accent)] bg-[var(--color-accent)]'
               : 'border-[var(--color-line)] bg-transparent'

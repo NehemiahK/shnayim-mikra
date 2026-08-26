@@ -40,6 +40,7 @@ function setup(over: Partial<VerseCardProps> = {}, targum: TargumSource = 'onkel
     parsha,
     hebrewStyle: 'taamim',
     showTranslation: false,
+    rashiEnglish: false,
     parallel: false,
     state: '0'.repeat(unit.steps.length),
     expanded: false,
@@ -109,7 +110,31 @@ describe('VerseCard', () => {
     expect(screen.getByRole('heading', { name: 'Translation' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Rashi' })).toBeInTheDocument();
     expect(screen.getByText('In the beginning God created')).toBeInTheDocument();
+    // Rashi's Hebrew is the reading; its English waits behind the accordion.
+    expect(screen.getByText(/אָמַר רַבִּי/u)).toBeInTheDocument();
+    expect(screen.queryByText(/Rabbi Isaac said/u)).not.toBeInTheDocument();
+  });
+
+  it('opens Rashi\'s English on demand without disturbing the Hebrew', async () => {
+    const user = userEvent.setup();
+    setup({ expanded: true, rashi });
+
+    const toggle = screen.getByRole('button', { name: 'English' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByText(/Rabbi Isaac said/u)).toBeInTheDocument();
+    expect(screen.getByText(/אָמַר רַבִּי/u)).toBeInTheDocument();
+
+    await user.click(toggle);
+    expect(screen.queryByText(/Rabbi Isaac said/u)).not.toBeInTheDocument();
+  });
+
+  it('starts Rashi\'s English open when the setting asks for it', () => {
+    setup({ expanded: true, rashi, rashiEnglish: true });
+    expect(screen.getByText(/Rabbi Isaac said/u)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'English' })).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('marks the dibur hamatchil so Rashi stays navigable', () => {
@@ -130,14 +155,24 @@ describe('VerseCard', () => {
 
   it('uses Rashi as the third reading when configured', () => {
     setup({ rashi }, 'rashi');
-    expect(screen.getByRole('button', { name: 'Rashi 1:1' })).toBeInTheDocument();
+    // Rashi has no tap-the-text control — it holds its own English disclosure,
+    // so its dot is the way to mark it read.
+    expect(screen.getByRole('button', { name: 'Rashi 1 1:1' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Onkelos 1:1' })).not.toBeInTheDocument();
+    expect(screen.getByText(/אָמַר רַבִּי/u)).toBeInTheDocument();
   });
 
   it('offers both Onkelos and Rashi when configured', () => {
     setup({ rashi }, 'both');
     expect(screen.getByRole('button', { name: 'Onkelos 1:1' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Rashi 1:1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Rashi 1 1:1' })).toBeInTheDocument();
+  });
+
+  it('does not nest interactive controls inside a tap target', () => {
+    setup({ rashi }, 'rashi');
+    for (const button of screen.getAllByRole('button')) {
+      expect(button.querySelector('button')).toBeNull();
+    }
   });
 
   it('exposes expansion state to assistive technology', async () => {

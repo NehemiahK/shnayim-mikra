@@ -2,8 +2,8 @@ import { memo } from 'react';
 import type { ParshaText, RashiComment, Verse } from '../lib/types.js';
 import type { ReadingUnit } from '../lib/reading-units.js';
 import { renderHebrew, type HebrewStyle } from '../lib/hebrew.js';
-import { RichText } from './RichText.js';
 import { StepDots } from './StepDots.js';
+import { RashiComments } from './RashiComments.js';
 import type { TranslationKey } from '../i18n.js';
 
 export interface VerseCardProps {
@@ -11,6 +11,7 @@ export interface VerseCardProps {
   parsha: ParshaText;
   hebrewStyle: HebrewStyle;
   showTranslation: boolean;
+  rashiEnglish: boolean;
   parallel: boolean;
   /** `1` for each completed step of the unit, `0` otherwise — memo key. */
   state: string;
@@ -32,6 +33,7 @@ function VerseCardImpl({
   parsha,
   hebrewStyle,
   showTranslation,
+  rashiEnglish,
   parallel,
   state,
   expanded,
@@ -116,23 +118,29 @@ function VerseCardImpl({
           <section className={parallel ? 'mt-4 md:mt-0' : 'mt-4 border-t border-[var(--color-line)] pt-4'}>
             {targumSteps.map((step) => (
               <div key={step.id} className="mb-3 last:mb-0">
-                <button
-                  type="button"
-                  onClick={() => { onToggleStep(step.id); }}
-                  className="w-full cursor-pointer text-start"
-                  aria-label={`${step.kind === 'rashi' ? t('rashi') : t('onkelos')} ${verseLabel(verse)}`}
-                >
-                  {step.kind === 'onkelos' ? (
+                {/*
+                  Onkelos is plain text, so the whole passage is a tap target.
+                  Rashi contains its own English disclosure, and an interactive
+                  element cannot sit inside a button — nor should tapping a
+                  passage mean two different things. There, the dot is the control.
+                */}
+                {step.kind === 'onkelos' ? (
+                  <button
+                    type="button"
+                    onClick={() => { onToggleStep(step.id); }}
+                    className="w-full cursor-pointer text-start"
+                    aria-label={`${t('onkelos')} ${verseLabel(verse)}`}
+                  >
                     <p className="hebrew-sm text-[var(--color-ink)]/90">{verse.on}</p>
-                  ) : (
-                    <RashiBody
-                      rashi={rashi}
-                      loading={rashiLoading}
-                      empty={t('noRashi')}
-                      loadingLabel={t('loading')}
-                    />
-                  )}
-                </button>
+                  </button>
+                ) : (
+                  <RashiComments
+                    comments={rashi}
+                    loading={rashiLoading}
+                    englishOpen={rashiEnglish}
+                    t={t}
+                  />
+                )}
                 <div className="mt-2">
                   <StepDots
                     label={step.kind === 'rashi' ? t('rashi') : t('onkelos')}
@@ -178,46 +186,17 @@ function VerseCardImpl({
               <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">
                 {t('rashi')}
               </h3>
-              <RashiBody
-                rashi={rashi}
-                loading={rashiLoading}
-                empty={t('noRashi')}
-                loadingLabel={t('loading')}
-              />
+              <RashiComments
+                      comments={rashi}
+                      loading={rashiLoading}
+                      englishOpen={rashiEnglish}
+                      t={t}
+                    />
             </div>
           )}
         </div>
       )}
     </article>
-  );
-}
-
-function RashiBody({
-  rashi,
-  loading,
-  empty,
-  loadingLabel,
-}: {
-  rashi: readonly RashiComment[] | undefined;
-  loading: boolean;
-  empty: string;
-  loadingLabel: string;
-}): React.JSX.Element {
-  if (loading) return <p className="text-sm text-[var(--color-muted)]">{loadingLabel}…</p>;
-  if (!rashi || rashi.length === 0) {
-    return <p className="text-sm italic text-[var(--color-muted)]">{empty}</p>;
-  }
-  return (
-    <div className="space-y-2">
-      {rashi.map((comment, i) => (
-        <div key={i}>
-          {comment.he.length > 0 && <RichText runs={comment.he} className="hebrew-sm" />}
-          {comment.en.length > 0 && (
-            <RichText runs={comment.en} className="english mt-1 text-[var(--color-muted)]" />
-          )}
-        </div>
-      ))}
-    </div>
   );
 }
 

@@ -160,6 +160,7 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
                 parsha={parsha}
                 hebrewStyle={settings.hebrewStyle}
                 showTranslation={settings.showTranslation}
+                rashiEnglish={settings.rashiEnglish}
                 done={state === '1'}
                 rashi={rashi[unit.slug]}
                 rashiLoading={rashiLoading}
@@ -179,6 +180,7 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
               parsha={parsha}
               hebrewStyle={settings.hebrewStyle}
               showTranslation={settings.showTranslation}
+              rashiEnglish={settings.rashiEnglish}
               parallel={settings.parallel}
               state={state}
               expanded={expanded === unit.id}

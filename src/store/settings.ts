@@ -16,6 +16,8 @@ export interface Settings {
   hebrewStyle: HebrewStyle;
   fontScale: number;
   showTranslation: boolean;
+  /** Whether Rashi's English starts expanded. The accordion is always there. */
+  rashiEnglish: boolean;
   parallel: boolean;
   theme: Theme;
   // How it behaves
@@ -32,6 +34,7 @@ export const DEFAULT_SETTINGS: Settings = {
   hebrewStyle: 'taamim',
   fontScale: 1,
   showTranslation: false,
+  rashiEnglish: false,
   parallel: false,
   theme: 'system',
   autoAdvance: true,
@@ -58,6 +61,7 @@ function coerce(raw: unknown): Settings {
     hebrewStyle: pick('hebrewStyle', ['taamim', 'nikud', 'plain']),
     fontScale: Math.min(FONT_SCALE_RANGE.max, Math.max(FONT_SCALE_RANGE.min, scale)),
     showTranslation: typeof v.showTranslation === 'boolean' ? v.showTranslation : false,
+    rashiEnglish: typeof v.rashiEnglish === 'boolean' ? v.rashiEnglish : false,
     parallel: typeof v.parallel === 'boolean' ? v.parallel : false,
     theme: pick('theme', ['light', 'dark', 'system']),
     autoAdvance: typeof v.autoAdvance === 'boolean' ? v.autoAdvance : true,

@@ -110,6 +110,13 @@ export function Settings(): React.JSX.Element {
             onChange={(v) => { set('showTranslation', v); }}
           />
         </Row>
+        <Row label={t('rashiEnglish')} help={t('rashiEnglishHelp')}>
+          <Toggle
+            label={t('rashiEnglish')}
+            checked={settings.rashiEnglish}
+            onChange={(v) => { set('rashiEnglish', v); }}
+          />
+        </Row>
         <Row label={t('parallel')} help={t('parallelHelp')}>
           <Toggle
             label={t('parallel')}
