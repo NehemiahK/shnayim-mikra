@@ -96,3 +96,13 @@ domain, so attaching a custom one later needs no code change.
 ## A note on V'Zot HaBerachah
 
 It is read on Simchat Torah, a festival, so it never falls on a regular Shabbat and never appears in the weekly schedule. It is still browsable and readable from the parsha list, since people do read it beforehand. The calendar tests assert both halves of this.
+
+## License
+
+The application code is MIT licensed — see [LICENSE](LICENSE).
+
+The Torah, Targum Onkelos, Rashi and English translation are not covered by
+that license and are not owned by this project. Every edition used is in the
+public domain, sourced from [Sefaria](https://www.sefaria.org); the exact
+editions and their licenses are listed in `src/data/attribution.json` and shown
+on the app's About page.

@@ -62,10 +62,10 @@ gh auth login
 The existing token on this machine has expired, so this re-authenticates. Then:
 
 ```bash
-gh repo create shnayim-mikra --private --source=. --push
+gh repo create shnayim-mikra --public --source=. --push
 ```
 
-Swap `--private` for `--public` if you want it public. Then in the Cloudflare
+Then in the Cloudflare
 dashboard: **Workers & Pages → Create → Pages → Connect to Git**, pick the repo, and set:
 
 - Build command: `npm run build`
@@ -75,6 +75,11 @@ dashboard: **Workers & Pages → Create → Pages → Connect to Git**, pick the
 Cloudflare then rebuilds on every push, and the two GitHub Actions workflows start
 working: CI on each PR, and a monthly job that re-pulls the Sefaria corpus and opens
 a PR if the text changed.
+
+For that monthly job to be able to open its PR, enable
+**Settings → Actions → General → Workflow permissions → Allow GitHub Actions to
+create and approve pull requests**. It is off by default and the job's final step
+will fail without it.
 
 **Path A and Path B can both be used** — deploy directly today, connect Git later.
 
