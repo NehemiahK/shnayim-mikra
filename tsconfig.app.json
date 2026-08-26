@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable", "WebWorker"],
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "types": ["vite/client", "vite-plugin-pwa/react"],
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["src", "vite.config.ts", "vitest.config.ts"]
+}

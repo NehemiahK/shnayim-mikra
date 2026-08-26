@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "shnayim-dev",
+      "runtimeExecutable": "/Users/nehemiah/.nvm/versions/node/v22.23.2/bin/node",
+      "runtimeArgs": ["node_modules/vite/bin/vite.js", "--port", "5273"],
+      "port": 5273
+    }
+  ]
+}

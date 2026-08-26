@@ -1,0 +1,53 @@
+{
+  "name": "shnayim-mikra",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "data:build": "tsx scripts/fetch-sefaria.ts",
+    "typecheck": "tsc -b --noEmit false --emitDeclarationOnly false || tsc -b",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "size": "tsx scripts/check-size.ts",
+    "fonts:build": "tsx scripts/fetch-fonts.ts"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "wouter": "^3.7.1",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@hebcal/core": "^6.9.2",
+    "@playwright/test": "^1.56.0",
+    "@tailwindcss/vite": "^4.1.14",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22.18.8",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.1",
+    "@vitejs/plugin-react": "^5.0.4",
+    "eslint": "^9.37.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.0",
+    "eslint-plugin-react-hooks": "^6.1.1",
+    "globals": "^16.4.0",
+    "jsdom": "^27.0.0",
+    "tailwindcss": "^4.1.14",
+    "tsx": "^4.20.6",
+    "vite": "^7.1.9",
+    "vite-plugin-pwa": "^1.0.3",
+    "vitest": "^3.2.4",
+    "zod": "^4.1.11"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2026-08-26",
+  "editions": [
+    {
+      "role": "Torah (Hebrew)",
+      "title": "Tanach with Ta'amei Hamikra",
+      "license": "Public Domain",
+      "language": "he"
+    },
+    {
+      "role": "Torah (English)",
+      "title": "The Holy Scriptures: A New Translation (JPS 1917)",
+      "license": "Public Domain",
+      "language": "en"
+    },
+    {
+      "role": "Targum Onkelos",
+      "title": "Onkelos Genesis",
+      "license": "Public Domain",
+      "language": "he"
+    },
+    {
+      "role": "Rashi (Hebrew)",
+      "title": "Pentateuch with Rashi's commentary by M. Rosenbaum and A.M. Silbermann, 1929-1934",
+      "license": "Public Domain",
+      "language": "he"
+    },
+    {
+      "role": "Rashi (English)",
+      "title": "Pentateuch with Rashi's commentary by M. Rosenbaum and A.M. Silbermann, 1929-1934",
+      "license": "Public Domain",
+      "language": "en"
+    }
+  ]
+}

@@ -1,0 +1,609 @@
+{
+  "parshiyot": [
+    {
+      "slug": "bereshit",
+      "book": "Genesis",
+      "nameEn": "Bereshit",
+      "nameHe": "בראשית",
+      "order": 1,
+      "verseCount": 146,
+      "aliyotCount": 7,
+      "ref": "1:1-6:8"
+    },
+    {
+      "slug": "noach",
+      "book": "Genesis",
+      "nameEn": "Noach",
+      "nameHe": "נח",
+      "order": 2,
+      "verseCount": 153,
+      "aliyotCount": 7,
+      "ref": "6:9-11:32"
+    },
+    {
+      "slug": "lech-lecha",
+      "book": "Genesis",
+      "nameEn": "Lech Lecha",
+      "nameHe": "לך לך",
+      "order": 3,
+      "verseCount": 126,
+      "aliyotCount": 7,
+      "ref": "12:1-17:27"
+    },
+    {
+      "slug": "vayera",
+      "book": "Genesis",
+      "nameEn": "Vayera",
+      "nameHe": "וירא",
+      "order": 4,
+      "verseCount": 147,
+      "aliyotCount": 7,
+      "ref": "18:1-22:24"
+    },
+    {
+      "slug": "chayei-sara",
+      "book": "Genesis",
+      "nameEn": "Chayei Sara",
+      "nameHe": "חיי שרה",
+      "order": 5,
+      "verseCount": 105,
+      "aliyotCount": 7,
+      "ref": "23:1-25:18"
+    },
+    {
+      "slug": "toldot",
+      "book": "Genesis",
+      "nameEn": "Toldot",
+      "nameHe": "תולדות",
+      "order": 6,
+      "verseCount": 106,
+      "aliyotCount": 7,
+      "ref": "25:19-28:9"
+    },
+    {
+      "slug": "vayetzei",
+      "book": "Genesis",
+      "nameEn": "Vayetzei",
+      "nameHe": "ויצא",
+      "order": 7,
+      "verseCount": 148,
+      "aliyotCount": 7,
+      "ref": "28:10-32:3"
+    },
+    {
+      "slug": "vayishlach",
+      "book": "Genesis",
+      "nameEn": "Vayishlach",
+      "nameHe": "וישלח",
+      "order": 8,
+      "verseCount": 153,
+      "aliyotCount": 7,
+      "ref": "32:4-36:43"
+    },
+    {
+      "slug": "vayeshev",
+      "book": "Genesis",
+      "nameEn": "Vayeshev",
+      "nameHe": "וישב",
+      "order": 9,
+      "verseCount": 112,
+      "aliyotCount": 7,
+      "ref": "37:1-40:23"
+    },
+    {
+      "slug": "miketz",
+      "book": "Genesis",
+      "nameEn": "Miketz",
+      "nameHe": "מקץ",
+      "order": 10,
+      "verseCount": 146,
+      "aliyotCount": 7,
+      "ref": "41:1-44:17"
+    },
+    {
+      "slug": "vayigash",
+      "book": "Genesis",
+      "nameEn": "Vayigash",
+      "nameHe": "ויגש",
+      "order": 11,
+      "verseCount": 106,
+      "aliyotCount": 7,
+      "ref": "44:18-47:27"
+    },
+    {
+      "slug": "vayechi",
+      "book": "Genesis",
+      "nameEn": "Vayechi",
+      "nameHe": "ויחי",
+      "order": 12,
+      "verseCount": 85,
+      "aliyotCount": 7,
+      "ref": "47:28-50:26"
+    },
+    {
+      "slug": "shemot",
+      "book": "Exodus",
+      "nameEn": "Shemot",
+      "nameHe": "שמות",
+      "order": 13,
+      "verseCount": 124,
+      "aliyotCount": 7,
+      "ref": "1:1-6:1"
+    },
+    {
+      "slug": "vaera",
+      "book": "Exodus",
+      "nameEn": "Vaera",
+      "nameHe": "וארא",
+      "order": 14,
+      "verseCount": 121,
+      "aliyotCount": 7,
+      "ref": "6:2-9:35"
+    },
+    {
+      "slug": "bo",
+      "book": "Exodus",
+      "nameEn": "Bo",
+      "nameHe": "בא",
+      "order": 15,
+      "verseCount": 106,
+      "aliyotCount": 7,
+      "ref": "10:1-13:16"
+    },
+    {
+      "slug": "beshalach",
+      "book": "Exodus",
+      "nameEn": "Beshalach",
+      "nameHe": "בשלח",
+      "order": 16,
+      "verseCount": 116,
+      "aliyotCount": 7,
+      "ref": "13:17-17:16"
+    },
+    {
+      "slug": "yitro",
+      "book": "Exodus",
+      "nameEn": "Yitro",
+      "nameHe": "יתרו",
+      "order": 17,
+      "verseCount": 75,
+      "aliyotCount": 7,
+      "ref": "18:1-20:23"
+    },
+    {
+      "slug": "mishpatim",
+      "book": "Exodus",
+      "nameEn": "Mishpatim",
+      "nameHe": "משפטים",
+      "order": 18,
+      "verseCount": 118,
+      "aliyotCount": 7,
+      "ref": "21:1-24:18"
+    },
+    {
+      "slug": "terumah",
+      "book": "Exodus",
+      "nameEn": "Terumah",
+      "nameHe": "תרומה",
+      "order": 19,
+      "verseCount": 96,
+      "aliyotCount": 7,
+      "ref": "25:1-27:19"
+    },
+    {
+      "slug": "tetzaveh",
+      "book": "Exodus",
+      "nameEn": "Tetzaveh",
+      "nameHe": "תצוה",
+      "order": 20,
+      "verseCount": 101,
+      "aliyotCount": 7,
+      "ref": "27:20-30:10"
+    },
+    {
+      "slug": "ki-tisa",
+      "book": "Exodus",
+      "nameEn": "Ki Tisa",
+      "nameHe": "כי תשא",
+      "order": 21,
+      "verseCount": 139,
+      "aliyotCount": 7,
+      "ref": "30:11-34:35"
+    },
+    {
+      "slug": "vayakhel",
+      "book": "Exodus",
+      "nameEn": "Vayakhel",
+      "nameHe": "ויקהל",
+      "order": 22,
+      "verseCount": 122,
+      "aliyotCount": 7,
+      "ref": "35:1-38:20"
+    },
+    {
+      "slug": "pekudei",
+      "book": "Exodus",
+      "nameEn": "Pekudei",
+      "nameHe": "פקודי",
+      "order": 23,
+      "verseCount": 92,
+      "aliyotCount": 7,
+      "ref": "38:21-40:38"
+    },
+    {
+      "slug": "vayikra",
+      "book": "Leviticus",
+      "nameEn": "Vayikra",
+      "nameHe": "ויקרא",
+      "order": 24,
+      "verseCount": 111,
+      "aliyotCount": 7,
+      "ref": "1:1-5:26"
+    },
+    {
+      "slug": "tzav",
+      "book": "Leviticus",
+      "nameEn": "Tzav",
+      "nameHe": "צו",
+      "order": 25,
+      "verseCount": 97,
+      "aliyotCount": 7,
+      "ref": "6:1-8:36"
+    },
+    {
+      "slug": "shmini",
+      "book": "Leviticus",
+      "nameEn": "Shmini",
+      "nameHe": "שמיני",
+      "order": 26,
+      "verseCount": 91,
+      "aliyotCount": 7,
+      "ref": "9:1-11:47"
+    },
+    {
+      "slug": "tazria",
+      "book": "Leviticus",
+      "nameEn": "Tazria",
+      "nameHe": "תזריע",
+      "order": 27,
+      "verseCount": 67,
+      "aliyotCount": 7,
+      "ref": "12:1-13:59"
+    },
+    {
+      "slug": "metzora",
+      "book": "Leviticus",
+      "nameEn": "Metzora",
+      "nameHe": "מצורע",
+      "order": 28,
+      "verseCount": 90,
+      "aliyotCount": 7,
+      "ref": "14:1-15:33"
+    },
+    {
+      "slug": "achrei-mot",
+      "book": "Leviticus",
+      "nameEn": "Achrei Mot",
+      "nameHe": "אחרי מות",
+      "order": 29,
+      "verseCount": 80,
+      "aliyotCount": 7,
+      "ref": "16:1-18:30"
+    },
+    {
+      "slug": "kedoshim",
+      "book": "Leviticus",
+      "nameEn": "Kedoshim",
+      "nameHe": "קדושים",
+      "order": 30,
+      "verseCount": 64,
+      "aliyotCount": 7,
+      "ref": "19:1-20:27"
+    },
+    {
+      "slug": "emor",
+      "book": "Leviticus",
+      "nameEn": "Emor",
+      "nameHe": "אמור",
+      "order": 31,
+      "verseCount": 124,
+      "aliyotCount": 7,
+      "ref": "21:1-24:23"
+    },
+    {
+      "slug": "behar",
+      "book": "Leviticus",
+      "nameEn": "Behar",
+      "nameHe": "בהר",
+      "order": 32,
+      "verseCount": 57,
+      "aliyotCount": 7,
+      "ref": "25:1-26:2"
+    },
+    {
+      "slug": "bechukotai",
+      "book": "Leviticus",
+      "nameEn": "Bechukotai",
+      "nameHe": "בחוקתי",
+      "order": 33,
+      "verseCount": 78,
+      "aliyotCount": 7,
+      "ref": "26:3-27:34"
+    },
+    {
+      "slug": "bamidbar",
+      "book": "Numbers",
+      "nameEn": "Bamidbar",
+      "nameHe": "במדבר",
+      "order": 34,
+      "verseCount": 159,
+      "aliyotCount": 7,
+      "ref": "1:1-4:20"
+    },
+    {
+      "slug": "nasso",
+      "book": "Numbers",
+      "nameEn": "Nasso",
+      "nameHe": "נשא",
+      "order": 35,
+      "verseCount": 176,
+      "aliyotCount": 7,
+      "ref": "4:21-7:89"
+    },
+    {
+      "slug": "behaalotcha",
+      "book": "Numbers",
+      "nameEn": "Beha'alotcha",
+      "nameHe": "בהעלותך",
+      "order": 36,
+      "verseCount": 136,
+      "aliyotCount": 7,
+      "ref": "8:1-12:16"
+    },
+    {
+      "slug": "shlach",
+      "book": "Numbers",
+      "nameEn": "Sh'lach",
+      "nameHe": "שלח",
+      "order": 37,
+      "verseCount": 119,
+      "aliyotCount": 7,
+      "ref": "13:1-15:41"
+    },
+    {
+      "slug": "korach",
+      "book": "Numbers",
+      "nameEn": "Korach",
+      "nameHe": "קרח",
+      "order": 38,
+      "verseCount": 95,
+      "aliyotCount": 7,
+      "ref": "16:1-18:32"
+    },
+    {
+      "slug": "chukat",
+      "book": "Numbers",
+      "nameEn": "Chukat",
+      "nameHe": "חקת",
+      "order": 39,
+      "verseCount": 87,
+      "aliyotCount": 7,
+      "ref": "19:1-22:1"
+    },
+    {
+      "slug": "balak",
+      "book": "Numbers",
+      "nameEn": "Balak",
+      "nameHe": "בלק",
+      "order": 40,
+      "verseCount": 104,
+      "aliyotCount": 7,
+      "ref": "22:2-25:9"
+    },
+    {
+      "slug": "pinchas",
+      "book": "Numbers",
+      "nameEn": "Pinchas",
+      "nameHe": "פנחס",
+      "order": 41,
+      "verseCount": 168,
+      "aliyotCount": 7,
+      "ref": "25:10-30:1"
+    },
+    {
+      "slug": "matot",
+      "book": "Numbers",
+      "nameEn": "Matot",
+      "nameHe": "מטות",
+      "order": 42,
+      "verseCount": 112,
+      "aliyotCount": 7,
+      "ref": "30:2-32:42"
+    },
+    {
+      "slug": "masei",
+      "book": "Numbers",
+      "nameEn": "Masei",
+      "nameHe": "מסעי",
+      "order": 43,
+      "verseCount": 132,
+      "aliyotCount": 7,
+      "ref": "33:1-36:13"
+    },
+    {
+      "slug": "devarim",
+      "book": "Deuteronomy",
+      "nameEn": "Devarim",
+      "nameHe": "דברים",
+      "order": 44,
+      "verseCount": 105,
+      "aliyotCount": 7,
+      "ref": "1:1-3:22"
+    },
+    {
+      "slug": "vaetchanan",
+      "book": "Deuteronomy",
+      "nameEn": "Vaetchanan",
+      "nameHe": "ואתחנן",
+      "order": 45,
+      "verseCount": 122,
+      "aliyotCount": 7,
+      "ref": "3:23-7:11"
+    },
+    {
+      "slug": "eikev",
+      "book": "Deuteronomy",
+      "nameEn": "Eikev",
+      "nameHe": "עקב",
+      "order": 46,
+      "verseCount": 111,
+      "aliyotCount": 7,
+      "ref": "7:12-11:25"
+    },
+    {
+      "slug": "reeh",
+      "book": "Deuteronomy",
+      "nameEn": "Re'eh",
+      "nameHe": "ראה",
+      "order": 47,
+      "verseCount": 126,
+      "aliyotCount": 7,
+      "ref": "11:26-16:17"
+    },
+    {
+      "slug": "shoftim",
+      "book": "Deuteronomy",
+      "nameEn": "Shoftim",
+      "nameHe": "שופטים",
+      "order": 48,
+      "verseCount": 97,
+      "aliyotCount": 7,
+      "ref": "16:18-21:9"
+    },
+    {
+      "slug": "ki-teitzei",
+      "book": "Deuteronomy",
+      "nameEn": "Ki Teitzei",
+      "nameHe": "כי תצא",
+      "order": 49,
+      "verseCount": 110,
+      "aliyotCount": 7,
+      "ref": "21:10-25:19"
+    },
+    {
+      "slug": "ki-tavo",
+      "book": "Deuteronomy",
+      "nameEn": "Ki Tavo",
+      "nameHe": "כי תבוא",
+      "order": 50,
+      "verseCount": 122,
+      "aliyotCount": 7,
+      "ref": "26:1-29:8"
+    },
+    {
+      "slug": "nitzavim",
+      "book": "Deuteronomy",
+      "nameEn": "Nitzavim",
+      "nameHe": "נצבים",
+      "order": 51,
+      "verseCount": 40,
+      "aliyotCount": 7,
+      "ref": "29:9-30:20"
+    },
+    {
+      "slug": "vayeilech",
+      "book": "Deuteronomy",
+      "nameEn": "Vayeilech",
+      "nameHe": "וילך",
+      "order": 52,
+      "verseCount": 30,
+      "aliyotCount": 7,
+      "ref": "31:1-30"
+    },
+    {
+      "slug": "haazinu",
+      "book": "Deuteronomy",
+      "nameEn": "Ha'Azinu",
+      "nameHe": "האזינו",
+      "order": 53,
+      "verseCount": 52,
+      "aliyotCount": 7,
+      "ref": "32:1-52"
+    },
+    {
+      "slug": "vzot-haberachah",
+      "book": "Deuteronomy",
+      "nameEn": "V'Zot HaBerachah",
+      "nameHe": "וזאת הברכה",
+      "order": 54,
+      "verseCount": 41,
+      "aliyotCount": 7,
+      "ref": "33:1-34:12"
+    }
+  ],
+  "combos": [
+    {
+      "slug": "achrei-mot-kedoshim",
+      "parts": [
+        "achrei-mot",
+        "kedoshim"
+      ],
+      "nameEn": "Achrei Mot-Kedoshim",
+      "nameHe": "אחרי מות־קדושים"
+    },
+    {
+      "slug": "behar-bechukotai",
+      "parts": [
+        "behar",
+        "bechukotai"
+      ],
+      "nameEn": "Behar-Bechukotai",
+      "nameHe": "בהר־בחוקתי"
+    },
+    {
+      "slug": "chukat-balak",
+      "parts": [
+        "chukat",
+        "balak"
+      ],
+      "nameEn": "Chukat-Balak",
+      "nameHe": "חקת־בלק"
+    },
+    {
+      "slug": "matot-masei",
+      "parts": [
+        "matot",
+        "masei"
+      ],
+      "nameEn": "Matot-Masei",
+      "nameHe": "מטות־מסעי"
+    },
+    {
+      "slug": "nitzavim-vayeilech",
+      "parts": [
+        "nitzavim",
+        "vayeilech"
+      ],
+      "nameEn": "Nitzavim-Vayeilech",
+      "nameHe": "נצבים־וילך"
+    },
+    {
+      "slug": "tazria-metzora",
+      "parts": [
+        "tazria",
+        "metzora"
+      ],
+      "nameEn": "Tazria-Metzora",
+      "nameHe": "תזריע־מצורע"
+    },
+    {
+      "slug": "vayakhel-pekudei",
+      "parts": [
+        "vayakhel",
+        "pekudei"
+      ],
+      "nameEn": "Vayakhel-Pekudei",
+      "nameHe": "ויקהל־פקודי"
+    }
+  ]
+}

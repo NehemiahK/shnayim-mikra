@@ -1,0 +1,43 @@
+name: Refresh Sefaria data
+
+# The Torah text does not change, but Sefaria occasionally corrects typos or
+# retitles an edition. This keeps the committed corpus current without ever
+# making the running app depend on Sefaria being up.
+on:
+  schedule:
+    - cron: '0 4 1 * *' # 04:00 UTC on the first of each month
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+
+      - name: Rebuild corpus from Sefaria
+        run: npm run data:build
+
+      - name: Verify the rebuilt corpus
+        run: npm test
+
+      - name: Open a pull request if anything changed
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'chore: refresh Sefaria corpus'
+          branch: chore/refresh-sefaria-data
+          delete-branch: true
+          title: 'chore: refresh Sefaria corpus'
+          body: |
+            Automated rebuild of the committed Torah, Targum Onkelos and Rashi
+            data from the Sefaria API.
+
+            The data tests passed against the rebuilt corpus. Review the diff
+            for any unexpected text changes before merging.

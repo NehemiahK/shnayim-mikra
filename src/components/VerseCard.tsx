@@ -1,0 +1,228 @@
+import { memo } from 'react';
+import type { ParshaText, RashiComment, Verse } from '../lib/types.js';
+import type { ReadingUnit } from '../lib/reading-units.js';
+import { renderHebrew, type HebrewStyle } from '../lib/hebrew.js';
+import { RichText } from './RichText.js';
+import { StepDots } from './StepDots.js';
+import type { TranslationKey } from '../i18n.js';
+
+export interface VerseCardProps {
+  unit: ReadingUnit;
+  parsha: ParshaText;
+  hebrewStyle: HebrewStyle;
+  showTranslation: boolean;
+  parallel: boolean;
+  /** `1` for each completed step of the unit, `0` otherwise — memo key. */
+  state: string;
+  expanded: boolean;
+  rashi: readonly RashiComment[] | undefined;
+  rashiLoading: boolean;
+  t: (key: TranslationKey) => string;
+  onToggleStep: (stepId: string) => void;
+  onAdvance: (kind: 'mikra' | 'targum') => void;
+  onToggleExpand: () => void;
+}
+
+function verseLabel(verse: Verse): string {
+  return `${String(verse.c)}:${String(verse.v)}`;
+}
+
+function VerseCardImpl({
+  unit,
+  parsha,
+  hebrewStyle,
+  showTranslation,
+  parallel,
+  state,
+  expanded,
+  rashi,
+  rashiLoading,
+  t,
+  onToggleStep,
+  onAdvance,
+  onToggleExpand,
+}: VerseCardProps): React.JSX.Element | null {
+  const index = unit.verses[0];
+  const verse = index === undefined ? undefined : parsha.verses[index];
+  if (!verse) return null;
+
+  const mikraSteps = unit.steps.filter((s) => s.kind === 'mikra');
+  const targumSteps = unit.steps.filter((s) => s.kind !== 'mikra');
+  const isDone = (id: string): boolean => {
+    const i = unit.steps.findIndex((s) => s.id === id);
+    return state[i] === '1';
+  };
+
+  const passLabels = [t('firstReading'), t('secondReading'), '3'];
+  const allDone = !state.includes('0');
+
+  return (
+    <article
+      id={`unit-${unit.id}`}
+      className={`scroll-mt-28 rounded-xl border bg-[var(--color-surface)] p-4 transition-colors ${
+        allDone ? 'border-[var(--color-accent)]/40' : 'border-[var(--color-line)]'
+      }`}
+    >
+      <header className="mb-2 flex items-center justify-between gap-2">
+        <span className="rounded-md bg-[var(--color-paper)] px-2 py-0.5 font-mono text-xs text-[var(--color-muted)]">
+          {verseLabel(verse)}
+        </span>
+        <button
+          type="button"
+          onClick={onToggleExpand}
+          aria-expanded={expanded}
+          aria-controls={`detail-${unit.id}`}
+          className="flex min-h-9 items-center gap-1 rounded-md px-2 text-xs text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+        >
+          {expanded ? t('showLess') : t('showMore')}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d={expanded ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'}
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      </header>
+
+      <div className={parallel ? 'gap-5 md:grid md:grid-cols-2' : ''}>
+        {/* Mikra — tapping the text completes the next unread pass. */}
+        <section>
+          <button
+            type="button"
+            onClick={() => { onAdvance('mikra'); }}
+            className="w-full cursor-pointer text-start"
+            aria-label={`${t('mikra')} ${verseLabel(verse)}`}
+          >
+            <p className="hebrew">{renderHebrew(verse.he, hebrewStyle)}</p>
+          </button>
+          <div className="mt-2">
+            <StepDots
+              label={t('mikra')}
+              context={verseLabel(verse)}
+              labels={passLabels}
+              states={mikraSteps.map((s) => isDone(s.id))}
+              onToggle={(i) => {
+                const step = mikraSteps[i];
+                if (step) onToggleStep(step.id);
+              }}
+            />
+          </div>
+        </section>
+
+        {targumSteps.length > 0 && (
+          <section className={parallel ? 'mt-4 md:mt-0' : 'mt-4 border-t border-[var(--color-line)] pt-4'}>
+            {targumSteps.map((step) => (
+              <div key={step.id} className="mb-3 last:mb-0">
+                <button
+                  type="button"
+                  onClick={() => { onToggleStep(step.id); }}
+                  className="w-full cursor-pointer text-start"
+                  aria-label={`${step.kind === 'rashi' ? t('rashi') : t('onkelos')} ${verseLabel(verse)}`}
+                >
+                  {step.kind === 'onkelos' ? (
+                    <p className="hebrew-sm text-[var(--color-ink)]/90">{verse.on}</p>
+                  ) : (
+                    <RashiBody
+                      rashi={rashi}
+                      loading={rashiLoading}
+                      empty={t('noRashi')}
+                      loadingLabel={t('loading')}
+                    />
+                  )}
+                </button>
+                <div className="mt-2">
+                  <StepDots
+                    label={step.kind === 'rashi' ? t('rashi') : t('onkelos')}
+                    context={verseLabel(verse)}
+                    labels={['1']}
+                    states={[isDone(step.id)]}
+                    onToggle={() => { onToggleStep(step.id); }}
+                  />
+                </div>
+              </div>
+            ))}
+          </section>
+        )}
+      </div>
+
+      {showTranslation && !expanded && (
+        <p className="english mt-3 border-t border-[var(--color-line)] pt-3 text-[var(--color-muted)]">
+          {verse.en}
+        </p>
+      )}
+
+      {expanded && (
+        <div
+          id={`detail-${unit.id}`}
+          className="mt-4 space-y-4 border-t border-[var(--color-line)] pt-4"
+        >
+          <div>
+            <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">
+              {t('translation')}
+            </h3>
+            <p className="english">{verse.en}</p>
+          </div>
+          {!targumSteps.some((s) => s.kind === 'onkelos') && (
+            <div>
+              <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">
+                {t('onkelos')}
+              </h3>
+              <p className="hebrew-sm">{verse.on}</p>
+            </div>
+          )}
+          {!targumSteps.some((s) => s.kind === 'rashi') && (
+            <div>
+              <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">
+                {t('rashi')}
+              </h3>
+              <RashiBody
+                rashi={rashi}
+                loading={rashiLoading}
+                empty={t('noRashi')}
+                loadingLabel={t('loading')}
+              />
+            </div>
+          )}
+        </div>
+      )}
+    </article>
+  );
+}
+
+function RashiBody({
+  rashi,
+  loading,
+  empty,
+  loadingLabel,
+}: {
+  rashi: readonly RashiComment[] | undefined;
+  loading: boolean;
+  empty: string;
+  loadingLabel: string;
+}): React.JSX.Element {
+  if (loading) return <p className="text-sm text-[var(--color-muted)]">{loadingLabel}…</p>;
+  if (!rashi || rashi.length === 0) {
+    return <p className="text-sm italic text-[var(--color-muted)]">{empty}</p>;
+  }
+  return (
+    <div className="space-y-2">
+      {rashi.map((comment, i) => (
+        <div key={i}>
+          {comment.he.length > 0 && <RichText runs={comment.he} className="hebrew-sm" />}
+          {comment.en.length > 0 && (
+            <RichText runs={comment.en} className="english mt-1 text-[var(--color-muted)]" />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Re-rendering every verse of a 200-verse parsha on each tap is wasteful, so
+ * the card is memoized on a compact string of its own step states.
+ */
+export const VerseCard = memo(VerseCardImpl);
