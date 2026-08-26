@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Lets a run be started by hand from the Actions tab — the only way to
+  # recover if a push-triggered run is ever dropped by a GitHub-side outage
+  # rather than a problem with the commit itself.
+  workflow_dispatch:
 
 jobs:
   verify:
