@@ -9,8 +9,8 @@
     },
     {
       "role": "Torah (English)",
-      "title": "The Holy Scriptures: A New Translation (JPS 1917)",
-      "license": "Public Domain",
+      "title": "Metsudah Chumash, Metsudah Publications, 2009",
+      "license": "CC-BY",
       "language": "en"
     },
     {
@@ -21,14 +21,14 @@
     },
     {
       "role": "Rashi (Hebrew)",
-      "title": "Pentateuch with Rashi's commentary by M. Rosenbaum and A.M. Silbermann, 1929-1934",
-      "license": "Public Domain",
+      "title": "Rashi Chumash, Metsudah Publications, 2009",
+      "license": "CC-BY",
       "language": "he"
     },
     {
       "role": "Rashi (English)",
-      "title": "Pentateuch with Rashi's commentary by M. Rosenbaum and A.M. Silbermann, 1929-1934",
-      "license": "Public Domain",
+      "title": "Rashi Chumash, Metsudah Publications, 2009",
+      "license": "CC-BY",
       "language": "en"
     }
   ]

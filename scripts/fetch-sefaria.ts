@@ -51,6 +51,10 @@ const startsWith = (prefix: string) => (title: string) =>
   title.trim().toLowerCase().startsWith(prefix.toLowerCase());
 const includes = (needle: string) => (title: string) =>
   title.toLowerCase().includes(needle.toLowerCase());
+// Some titles share a prefix with a worse-licensed variant — e.g. "Metsudah
+// Chumash, Metsudah Publications, 2009" (CC-BY) vs the same title suffixed
+// "[with Onkelos translation]" (CC-BY-NC). Only an exact match is safe there.
+const exact = (title: string) => (t: string) => t.trim() === title;
 
 const PREFS = {
   torahHe: {
@@ -61,22 +65,43 @@ const PREFS = {
   torahEn: {
     language: 'en',
     label: 'Torah English',
-    match: [includes('JPS 1917'), includes('The Holy Scriptures'), includes('Metsudah Chumash')],
+    // Metsudah reads more modern than the 1917 JPS wording it replaces; both
+    // are Public Domain/CC-BY, so this is a pure upgrade in readability.
+    match: [
+      exact('Metsudah Chumash, Metsudah Publications, 2009'),
+      includes('JPS 1917'),
+      includes('The Holy Scriptures'),
+    ],
   },
   onkelos: {
     language: 'he',
     label: 'Targum Onkelos',
-    match: [startsWith('Onkelos'), includes('Yemenite Taj'), includes('Sifsei Chachomim')],
+    // Deliberately NOT Metsudah's Sifsei Chachomim edition here — it is
+    // CC-BY-NC, which would block ever monetizing the app. The Onkelos verse
+    // text itself is not a "translation style" choice the way Torah/Rashi
+    // English is, so there is nothing to gain by accepting that restriction.
+    match: [startsWith('Onkelos'), includes('Yemenite Taj')],
   },
   rashiHe: {
     language: 'he',
     label: 'Rashi Hebrew',
-    match: [startsWith("Pentateuch with Rashi's commentary"), includes('Rashi Chumash')],
+    match: [
+      exact('Rashi Chumash, Metsudah Publications, 2009'),
+      startsWith("Pentateuch with Rashi's commentary"),
+    ],
   },
   rashiEn: {
     language: 'en',
     label: 'Rashi English',
-    match: [startsWith("Pentateuch with Rashi's commentary"), includes('Rashi Chumash'), includes('Sefaria')],
+    // Paired with the Metsudah Hebrew above (not Rosenbaum-Silbermann's):
+    // an English translation is written against its own edition's comment
+    // segmentation, and the two must be fetched from the same edition for
+    // the per-comment he[i]/en[i] pairing built in buildParsha to line up.
+    match: [
+      exact('Rashi Chumash, Metsudah Publications, 2009'),
+      startsWith("Pentateuch with Rashi's commentary"),
+      includes('Sefaria'),
+    ],
   },
 } as const satisfies Record<string, EditionPreference>;
 

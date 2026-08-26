@@ -106,23 +106,23 @@ test.describe('Rashi and translation', () => {
     const detail = card.locator('[id^="detail-"]');
     await expect(detail.getByRole('heading', { name: 'Translation' })).toBeVisible();
     await expect(detail.getByRole('heading', { name: 'Rashi' })).toBeVisible();
-    await expect(detail).toContainText('when thou art come in unto the land');
+    await expect(detail).toContainText('When it happens that you come to the land');
 
     // The dibur hamatchil is what makes Rashi navigable — it must survive.
     await expect(detail.locator('strong').first()).toBeVisible();
     await expect(detail.locator('strong').first()).toContainText('והיה כי תבוא');
 
     // Rashi's own English stays behind its disclosure here too.
-    await expect(detail).not.toContainText('This tells us');
+    await expect(detail).not.toContainText('This teaches that');
     await detail.getByRole('button', { name: 'English' }).first().click();
-    await expect(detail).toContainText('This tells us');
+    await expect(detail).toContainText('This teaches that');
   });
 
   test('translation can be shown inline under every verse', async ({ page }) => {
     await setSettings(page, { showTranslation: true });
     await page.goto(`/p/${PARSHA}`);
     const card = page.locator('article[id^="unit-"]').first();
-    await expect(card).toContainText('when thou art come in unto the land');
+    await expect(card).toContainText('When it happens that you come to the land');
   });
 });
 
@@ -149,14 +149,14 @@ test.describe('settings', () => {
 
     const english = card.getByRole('button', { name: 'English' }).first();
     await expect(english).toHaveAttribute('aria-expanded', 'false');
-    await expect(card).not.toContainText('This tells us');
+    await expect(card).not.toContainText('This teaches that');
 
     await english.click();
     await expect(english).toHaveAttribute('aria-expanded', 'true');
-    await expect(card).toContainText('This tells us');
+    await expect(card).toContainText('This teaches that');
 
     await english.click();
-    await expect(card).not.toContainText('This tells us');
+    await expect(card).not.toContainText('This teaches that');
   });
 
   test('Rashi English can start open', async ({ page }) => {
@@ -167,7 +167,7 @@ test.describe('settings', () => {
       'aria-expanded',
       'true',
     );
-    await expect(card).toContainText('This tells us');
+    await expect(card).toContainText('This teaches that');
   });
 
   test('aliyah mode reads in blocks instead of verse by verse', async ({ page }) => {

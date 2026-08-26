@@ -20,16 +20,37 @@ The whole app is 78 KB of JavaScript, gzipped.
 
 ## Texts
 
-Every default edition is **public domain**:
+| Role | Edition | License |
+| --- | --- | --- |
+| Torah (Hebrew) | Tanach with Ta'amei Hamikra | Public Domain |
+| Torah (English) | Metsudah Chumash, Metsudah Publications, 2009 | CC-BY |
+| Targum Onkelos | Onkelos, vocalized | Public Domain |
+| Rashi (Hebrew + English) | Rashi Chumash, Metsudah Publications, 2009 | CC-BY |
 
-| Role | Edition |
-| --- | --- |
-| Torah (Hebrew) | Tanach with Ta'amei Hamikra |
-| Torah (English) | The Holy Scriptures: A New Translation (JPS 1917) |
-| Targum Onkelos | Onkelos, vocalized |
-| Rashi | Pentateuch with Rashi's commentary, Rosenbaum & Silbermann, 1929–1934 |
+Hebrew Torah and Onkelos stay on public-domain editions deliberately — there is
+no meaningful "translation quality" difference for the Hebrew verse text or the
+Aramaic Targum the way there is for English prose, so there is nothing to gain
+by trading away commercial flexibility for them. Metsudah's Torah English and
+Rashi read more like contemporary prose than the alternatives (1917 JPS,
+1929 Rosenbaum-Silbermann) and are **CC-BY** — reuse just needs attribution,
+which costs nothing here since the pipeline already renders it. Their sibling
+editions bundled "[with Onkelos translation]" are **CC-BY-NC** instead and are
+deliberately avoided: a noncommercial restriction would permanently rule out
+a donation button or paid tier without renegotiating, for a project that
+otherwise has no reason to accept that limit.
 
-The pipeline **discovers** editions by preference rather than hardcoding titles — Sefaria titles the same edition differently between books — and records what it actually used in `src/data/attribution.json`, which the About page renders. Attribution can't drift from reality.
+The pipeline **discovers** editions by preference rather than hardcoding
+titles — Sefaria titles the same edition differently between books, and a
+same-titled edition sometimes has a worse-licensed variant (an exact-title
+match, not a substring, is what keeps the CC-BY Metsudah Chumash from being
+confused with its CC-BY-NC "[with Onkelos translation]" sibling). Whatever it
+resolves to is recorded in `src/data/attribution.json`, which the About page
+renders directly, so attribution can't drift from reality.
+
+Rashi's Hebrew and English are fetched from the *same* edition deliberately:
+an English translation's comment segmentation is written against its own
+Hebrew edition, and pairing two different publishers' editions risks the
+per-comment `he[i]`/`en[i]` correspondence silently drifting apart.
 
 Only one Hebrew field is stored per verse. Vowels-only and letters-only display are derived at render time by stripping Unicode ranges, which is exactly what those marks are.
 
@@ -103,7 +124,7 @@ It is read on Simchat Torah, a festival, so it never falls on a regular Shabbat 
 The application code is MIT licensed — see [LICENSE](LICENSE).
 
 The Torah, Targum Onkelos, Rashi and English translation are not covered by
-that license and are not owned by this project. Every edition used is in the
-public domain, sourced from [Sefaria](https://www.sefaria.org); the exact
-editions and their licenses are listed in `src/data/attribution.json` and shown
-on the app's About page.
+that license and are not owned by this project. They are public domain or
+CC-BY editions sourced from [Sefaria](https://www.sefaria.org) — see the
+table above, `src/data/attribution.json`, or the app's About page for exactly
+which edition and license applies to each.
