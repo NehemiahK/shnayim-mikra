@@ -41,6 +41,7 @@ function setup(over: Partial<VerseCardProps> = {}, targum: TargumSource = 'onkel
     hebrewStyle: 'taamim',
     showTranslation: false,
     rashiEnglish: false,
+    rashiFallbackToOnkelos: false,
     parallel: false,
     state: '0'.repeat(unit.steps.length),
     expanded: false,
@@ -146,6 +147,29 @@ describe('VerseCard', () => {
   it('says so when a verse has no Rashi', () => {
     setup({ expanded: true, rashi: [] });
     expect(screen.getByText('No Rashi on this verse.')).toBeInTheDocument();
+  });
+
+  it('falls back to Onkelos when Rashi is the third reading but this verse has none', () => {
+    setup({ rashi: [], rashiFallbackToOnkelos: true }, 'rashi');
+    expect(screen.getByText('No Rashi here — Targum instead:')).toBeInTheDocument();
+    expect(screen.getByText(/בְּקַדְמִין/u)).toBeInTheDocument();
+    expect(screen.queryByText('No Rashi on this verse.')).not.toBeInTheDocument();
+    // The dot must say what is actually being read here, not what was assigned.
+    expect(screen.getByRole('button', { name: 'Onkelos 1 1:1' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Rashi 1 1:1' })).not.toBeInTheDocument();
+  });
+
+  it('does not fall back when the setting is off, even with no Rashi', () => {
+    setup({ rashi: [], rashiFallbackToOnkelos: false }, 'rashi');
+    expect(screen.getByText('No Rashi on this verse.')).toBeInTheDocument();
+    expect(screen.queryByText(/בְּקַדְמִין/u)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Rashi 1 1:1' })).toBeInTheDocument();
+  });
+
+  it('does not fall back for a verse that actually has Rashi', () => {
+    setup({ rashi, rashiFallbackToOnkelos: true }, 'rashi');
+    expect(screen.queryByText('No Rashi here — Targum instead:')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Rashi 1 1:1' })).toBeInTheDocument();
   });
 
   it('shows a loading hint while Rashi is fetched', () => {

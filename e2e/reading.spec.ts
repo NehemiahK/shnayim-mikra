@@ -259,6 +259,81 @@ test.describe('combined parshiyot', () => {
     await expect(page.locator('nav button')).toHaveCount(14);
     await expect(page.locator('article[id^="unit-masei:"]').first()).toBeVisible();
   });
+
+  test('labels each half\'s aliyot instead of repeating 1-7 unmarked', async ({ page }) => {
+    await page.goto('/p/matot-masei');
+    const nav = page.locator('nav').first();
+    await expect(nav.getByText('Matot', { exact: true })).toBeVisible();
+    await expect(nav.getByText('Masei', { exact: true })).toBeVisible();
+    await expect(nav.getByRole('button', { name: 'Matot 1' })).toBeVisible();
+    await expect(nav.getByRole('button', { name: 'Masei 1' })).toBeVisible();
+  });
+
+  test('appears as its own row in the browse list, after both individual halves', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Numbers' }).click();
+    const rows = page.locator('a[href^="/p/"]');
+    await expect(page.locator('a[href="/p/matot-masei"]')).toBeVisible();
+    await expect(page.getByText('Matot + Masei')).toBeVisible();
+
+    const hrefs = await rows.evaluateAll((els) => els.map((el) => el.getAttribute('href')));
+    const matot = hrefs.indexOf('/p/matot');
+    const masei = hrefs.indexOf('/p/masei');
+    const combo = hrefs.lastIndexOf('/p/matot-masei');
+    expect(matot).toBeGreaterThanOrEqual(0);
+    expect(masei).toBe(matot + 1);
+    expect(combo).toBe(masei + 1);
+  });
+});
+
+test.describe('Rashi fallback to Targum', () => {
+  // Ki Tavo 26:6 has no Rashi comment under the current edition.
+  const NO_RASHI_UNIT = '#unit-ki-tavo\\:26\\:6';
+
+  test('reads Onkelos in place of a missing Rashi when Rashi is the third reading', async ({ page }) => {
+    await setSettings(page, { targum: 'rashi', rashiFallbackToOnkelos: true });
+    await page.goto(`/p/${PARSHA}`);
+    const card = page.locator(NO_RASHI_UNIT);
+    await card.scrollIntoViewIfNeeded();
+
+    await expect(card).toContainText('No Rashi here — Targum instead:');
+    await expect(card).not.toContainText('No Rashi on this verse.');
+    // The dot must reflect what is actually shown, not what was assigned.
+    await expect(card.getByRole('button', { name: 'Onkelos 1 26:6' })).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Rashi 1 26:6' })).toHaveCount(0);
+  });
+
+  test('says there is no Rashi when the fallback is turned off', async ({ page }) => {
+    await setSettings(page, { targum: 'rashi', rashiFallbackToOnkelos: false });
+    await page.goto(`/p/${PARSHA}`);
+    const card = page.locator(NO_RASHI_UNIT);
+    await card.scrollIntoViewIfNeeded();
+
+    await expect(card).toContainText('No Rashi on this verse.');
+    await expect(card.getByRole('button', { name: 'Rashi 1 26:6' })).toBeVisible();
+  });
+
+  test('never doubles up Onkelos when both readings are shown', async ({ page }) => {
+    await setSettings(page, { targum: 'both', rashiFallbackToOnkelos: true });
+    await page.goto(`/p/${PARSHA}`);
+    const card = page.locator(NO_RASHI_UNIT);
+    await card.scrollIntoViewIfNeeded();
+
+    await expect(card).toContainText('No Rashi on this verse.');
+    const text = await card.innerText();
+    expect(text.match(/וְאַבְאִישׁוּ/gu)).toHaveLength(1);
+  });
+
+  test('the setting only appears when Rashi is the sole third reading', async ({ page }) => {
+    await page.goto('/settings');
+    await expect(page.getByText('Show Targum when Rashi is missing')).toHaveCount(0);
+
+    await page.getByRole('radio', { name: 'Rashi', exact: true }).click();
+    await expect(page.getByText('Show Targum when Rashi is missing')).toBeVisible();
+
+    await page.getByRole('radio', { name: 'Onkelos and Rashi' }).click();
+    await expect(page.getByText('Show Targum when Rashi is missing')).toHaveCount(0);
+  });
 });
 
 test.describe('robustness', () => {

@@ -9,6 +9,14 @@ export interface RashiCommentsProps {
   loading: boolean;
   /** Whether each comment starts with its English already open. */
   englishOpen: boolean;
+  /**
+   * Targum text to show instead of "no Rashi" when this verse has none.
+   * Only pass this where Rashi is the assigned reading and skipping it would
+   * leave nothing to read; the informational Rashi panel in the expanded
+   * verse detail should keep saying there is no Rashi, since nothing there
+   * is a required reading.
+   */
+  onkelosFallback?: string | undefined;
   t: (key: TranslationKey) => string;
 }
 
@@ -25,12 +33,21 @@ export function RashiComments({
   comments,
   loading,
   englishOpen,
+  onkelosFallback,
   t,
 }: RashiCommentsProps): React.JSX.Element {
   if (loading) {
     return <p className="text-sm text-[var(--color-muted)]">{t('loading')}…</p>;
   }
   if (!comments || comments.length === 0) {
+    if (onkelosFallback !== undefined && onkelosFallback !== '') {
+      return (
+        <div>
+          <p className="text-xs italic text-[var(--color-muted)]">{t('noRashiUsingTargum')}</p>
+          <p className="hebrew-sm mt-1">{onkelosFallback}</p>
+        </div>
+      );
+    }
     return <p className="text-sm italic text-[var(--color-muted)]">{t('noRashi')}</p>;
   }
   return (

@@ -1,6 +1,6 @@
 import calendarData from '../data/calendar.json' with { type: 'json' };
 import indexData from '../data/parshiyot.json' with { type: 'json' };
-import type { Calendar, ParshaCombo, ParshaMeta, ParshiyotIndex } from './types.js';
+import type { Book, Calendar, ParshaCombo, ParshaMeta, ParshiyotIndex } from './types.js';
 
 const calendar = calendarData as Calendar;
 const index = indexData as ParshiyotIndex;
@@ -126,4 +126,44 @@ export function upcomingReadings(date: Date, region: Region, count: number): Wee
     i++;
   }
   return out;
+}
+
+export interface BookRow {
+  slug: string;
+  nameEn: string;
+  nameHe: string;
+  /** Verse range for a single parsha; "PartA + PartB" for a combined week. */
+  subtitle: string;
+  isCombo: boolean;
+}
+
+/**
+ * A book's browse-list rows: every parsha in reading order, with each combined
+ * week's entry inserted right after its second half — so a reader can jump
+ * straight to whichever way that week is actually read, without needing to
+ * know in advance whether a given year doubles it up.
+ */
+export function bookRows(book: Book): BookRow[] {
+  const comboBySecondPart = new Map(COMBOS.map((c) => [c.parts[1], c]));
+  const rows: BookRow[] = [];
+
+  for (const meta of PARSHIYOT) {
+    if (meta.book !== book) continue;
+    rows.push({ slug: meta.slug, nameEn: meta.nameEn, nameHe: meta.nameHe, subtitle: meta.ref, isCombo: false });
+
+    const combo = comboBySecondPart.get(meta.slug);
+    if (combo) {
+      const [aSlug, bSlug] = combo.parts;
+      const a = metaBySlug.get(aSlug);
+      const b = metaBySlug.get(bSlug);
+      rows.push({
+        slug: combo.slug,
+        nameEn: combo.nameEn,
+        nameHe: combo.nameHe,
+        subtitle: `${a?.nameEn ?? aSlug} + ${b?.nameEn ?? bSlug}`,
+        isCombo: true,
+      });
+    }
+  }
+  return rows;
 }

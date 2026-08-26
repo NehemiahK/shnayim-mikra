@@ -12,6 +12,8 @@ export interface Settings {
   structure: ReadingStructure;
   targum: TargumSource;
   mikraRepetitions: number;
+  /** When the chosen third reading is Rashi and a verse has none, read Targum there instead. */
+  rashiFallbackToOnkelos: boolean;
   // How the text looks
   hebrewStyle: HebrewStyle;
   fontScale: number;
@@ -31,6 +33,7 @@ export const DEFAULT_SETTINGS: Settings = {
   structure: 'verse',
   targum: 'onkelos',
   mikraRepetitions: 2,
+  rashiFallbackToOnkelos: true,
   hebrewStyle: 'taamim',
   fontScale: 1,
   showTranslation: false,
@@ -58,6 +61,8 @@ function coerce(raw: unknown): Settings {
     structure: pick('structure', ['verse', 'aliyah']),
     targum: pick('targum', ['onkelos', 'rashi', 'both']),
     mikraRepetitions: Math.min(3, Math.max(1, reps)),
+    rashiFallbackToOnkelos:
+      typeof v.rashiFallbackToOnkelos === 'boolean' ? v.rashiFallbackToOnkelos : true,
     hebrewStyle: pick('hebrewStyle', ['taamim', 'nikud', 'plain']),
     fontScale: Math.min(FONT_SCALE_RANGE.max, Math.max(FONT_SCALE_RANGE.min, scale)),
     showTranslation: typeof v.showTranslation === 'boolean' ? v.showTranslation : false,

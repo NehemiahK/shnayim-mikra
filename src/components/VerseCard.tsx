@@ -12,6 +12,7 @@ export interface VerseCardProps {
   hebrewStyle: HebrewStyle;
   showTranslation: boolean;
   rashiEnglish: boolean;
+  rashiFallbackToOnkelos: boolean;
   parallel: boolean;
   /** `1` for each completed step of the unit, `0` otherwise — memo key. */
   state: string;
@@ -34,6 +35,7 @@ function VerseCardImpl({
   hebrewStyle,
   showTranslation,
   rashiEnglish,
+  rashiFallbackToOnkelos,
   parallel,
   state,
   expanded,
@@ -57,6 +59,13 @@ function VerseCardImpl({
 
   const passLabels = [t('firstReading'), t('secondReading'), '3'];
   const allDone = !state.includes('0');
+
+  // When Rashi is the assigned third reading but this verse has none, the
+  // fallback substitutes Onkelos so the reading is never left empty — the
+  // dot's label must track whichever text is actually being shown.
+  const rashiFallenBack = (!rashi || rashi.length === 0) && rashiFallbackToOnkelos;
+  const targumLabel = (kind: 'onkelos' | 'rashi'): string =>
+    kind === 'rashi' && rashiFallenBack ? t('onkelos') : kind === 'rashi' ? t('rashi') : t('onkelos');
 
   return (
     <article
@@ -138,12 +147,17 @@ function VerseCardImpl({
                     comments={rashi}
                     loading={rashiLoading}
                     englishOpen={rashiEnglish}
+                    onkelosFallback={rashiFallbackToOnkelos ? verse.on : undefined}
                     t={t}
                   />
                 )}
                 <div className="mt-2">
+                  {/*
+                    When this verse has no Rashi and the fallback kicked in,
+                    the dot should say what is actually being read here.
+                  */}
                   <StepDots
-                    label={step.kind === 'rashi' ? t('rashi') : t('onkelos')}
+                    label={targumLabel(step.kind === 'rashi' ? 'rashi' : 'onkelos')}
                     context={verseLabel(verse)}
                     labels={['1']}
                     states={[isDone(step.id)]}

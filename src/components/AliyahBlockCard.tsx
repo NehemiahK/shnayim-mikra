@@ -11,6 +11,7 @@ export interface AliyahBlockCardProps {
   hebrewStyle: HebrewStyle;
   showTranslation: boolean;
   rashiEnglish: boolean;
+  rashiFallbackToOnkelos: boolean;
   done: boolean;
   rashi: RashiText | undefined;
   rashiLoading: boolean;
@@ -25,6 +26,7 @@ function AliyahBlockCardImpl({
   hebrewStyle,
   showTranslation,
   rashiEnglish,
+  rashiFallbackToOnkelos,
   done,
   rashi,
   rashiLoading,
@@ -86,6 +88,7 @@ function AliyahBlockCardImpl({
                     comments={rashi?.comments[key]}
                     loading={rashiLoading}
                     englishOpen={rashiEnglish}
+                    onkelosFallback={rashiFallbackToOnkelos ? verse.on : undefined}
                     t={t}
                   />
                 )}

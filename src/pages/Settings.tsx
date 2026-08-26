@@ -63,6 +63,15 @@ export function Settings(): React.JSX.Element {
             ]}
           />
         </Row>
+        {settings.targum === 'rashi' && (
+          <Row label={t('rashiFallback')} help={t('rashiFallbackHelp')}>
+            <Toggle
+              label={t('rashiFallback')}
+              checked={settings.rashiFallbackToOnkelos}
+              onChange={(v) => { set('rashiFallbackToOnkelos', v); }}
+            />
+          </Row>
+        )}
         <Row label={t('repetitions')} help={t('repetitionsHelp')}>
           <Choice
             label={t('repetitions')}

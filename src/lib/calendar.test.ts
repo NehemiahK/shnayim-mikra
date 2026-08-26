@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   COMBOS,
   PARSHIYOT,
+  bookRows,
   parshaMeta,
   readingForDate,
   readingOrder,
@@ -10,6 +11,7 @@ import {
   toIsoDate,
   upcomingReadings,
 } from './calendar.js';
+import { BOOKS as BOOK_NAMES } from './types.js';
 
 const d = (iso: string): Date => {
   const [y, m, day] = iso.split('-').map(Number);
@@ -119,5 +121,39 @@ describe('upcomingReadings', () => {
     expect(list).toHaveLength(5);
     expect(list[0]?.slug).toBe('ki-tavo');
     expect(new Set(list.map((r) => r.slug)).size).toBe(5);
+  });
+});
+
+describe('bookRows', () => {
+  it('lists every parsha in a book, in reading order', () => {
+    const rows = bookRows('Genesis');
+    expect(rows.filter((r) => !r.isCombo)).toHaveLength(12);
+    expect(rows[0]?.slug).toBe('bereshit');
+    expect(rows.every((r) => r.isCombo || parshaMeta(r.slug)?.book === 'Genesis')).toBe(true);
+  });
+
+  it('inserts a combined week right after its second half', () => {
+    const rows = bookRows('Numbers');
+    const slugs = rows.map((r) => r.slug);
+    const masei = slugs.indexOf('masei');
+    const matotMasei = slugs.indexOf('matot-masei');
+    expect(masei).toBeGreaterThanOrEqual(0);
+    expect(matotMasei).toBe(masei + 1);
+  });
+
+  it('gives a combined row a subtitle naming both halves', () => {
+    const combo = bookRows('Numbers').find((r) => r.slug === 'matot-masei');
+    expect(combo?.subtitle).toBe('Matot + Masei');
+    expect(combo?.isCombo).toBe(true);
+  });
+
+  it('never inserts a combo into an unrelated book', () => {
+    const genesisSlugs = bookRows('Genesis').map((r) => r.slug);
+    expect(genesisSlugs).not.toContain('matot-masei');
+  });
+
+  it('covers every combo across all books exactly once', () => {
+    const allCombos = BOOK_NAMES.flatMap((b) => bookRows(b)).filter((r) => r.isCombo);
+    expect(allCombos.map((r) => r.slug).sort()).toEqual(COMBOS.map((c) => c.slug).sort());
   });
 });

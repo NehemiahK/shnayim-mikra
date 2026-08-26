@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'wouter';
 import {
   PARSHIYOT,
+  bookRows,
   parshaMeta,
   readingForDate,
   resolveParsha,
@@ -94,7 +95,11 @@ export function Home(): React.JSX.Element {
         </h2>
         <div className="space-y-2">
           {BOOKS.map((book) => {
-            const inBook = PARSHIYOT.filter((p) => p.book === book);
+            // A combined week's own row sits right after its second half, so
+            // a reader can jump straight to however that week is actually
+            // read without knowing in advance whether this year doubles it.
+            const rows = bookRows(book);
+            const singleCount = PARSHIYOT.filter((p) => p.book === book).length;
             const open = openBook === book;
             return (
               <div key={book} className="overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)]">
@@ -106,25 +111,32 @@ export function Home(): React.JSX.Element {
                 >
                   <span className="font-medium">{book}</span>
                   <span className="text-xs text-[var(--color-muted)]">
-                    {inBook.length} · {open ? '−' : '+'}
+                    {singleCount} · {open ? '−' : '+'}
                   </span>
                 </button>
                 {open && (
                   <ul className="border-t border-[var(--color-line)]">
-                    {inBook.map((meta) => (
-                      <li key={meta.slug} className="border-b border-[var(--color-line)] last:border-0">
+                    {rows.map((row) => (
+                      <li key={row.slug} className="border-b border-[var(--color-line)] last:border-0">
                         <Link
-                          href={`/p/${meta.slug}`}
+                          href={`/p/${row.slug}`}
                           className="flex min-h-12 items-center justify-between gap-3 px-4"
                         >
                           <span className="min-w-0">
-                            <span className="hebrew-sm block truncate">{meta.nameHe}</span>
+                            <span className="hebrew-sm flex items-center gap-1.5 truncate">
+                              {row.nameHe}
+                              {row.isCombo && (
+                                <span className="rounded bg-[var(--color-accent-soft)] px-1.5 py-0.5 text-[0.65rem] font-sans font-medium text-[var(--color-accent)]">
+                                  {t('combined')}
+                                </span>
+                              )}
+                            </span>
                             <span className="block truncate text-xs text-[var(--color-muted)]">
-                              {meta.nameEn} · {meta.ref}
-                              {meta.slug === 'vzot-haberachah' ? ` · ${t('simchatTorah')}` : ''}
+                              {row.nameEn} · {row.subtitle}
+                              {row.slug === 'vzot-haberachah' ? ` · ${t('simchatTorah')}` : ''}
                             </span>
                           </span>
-                          <ProgressRing fraction={fractionFor(meta.slug)} size={28} />
+                          <ProgressRing fraction={fractionFor(row.slug)} size={28} />
                         </Link>
                       </li>
                     ))}

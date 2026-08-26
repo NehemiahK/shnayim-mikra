@@ -22,7 +22,7 @@ interface ReadingSessionProps {
 }
 
 export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX.Element {
-  const { t } = useT();
+  const { t, lang } = useT();
   const settings = useSettings((s) => s.settings);
   const done = useProgress((s) => s.done);
   const toggle = useProgress((s) => s.toggle);
@@ -33,6 +33,13 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
   const [rashi, setRashi] = useState<Record<string, RashiText>>({});
   const [rashiLoading, setRashiLoading] = useState(false);
   const pendingScroll = useRef<string | null>(null);
+
+  // Only meaningful when Rashi is the *sole* third reading — in "both" mode
+  // Onkelos already has its own dedicated step, so falling back to it again
+  // under a Rashi-less verse would just show it twice. The setting itself
+  // stays on if the reader switches modes and back, so this is resolved once
+  // here rather than re-derived (and easy to get wrong) in each card.
+  const rashiFallbackActive = settings.targum === 'rashi' && settings.rashiFallbackToOnkelos;
 
   const units = useMemo(
     () =>
@@ -45,6 +52,11 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
   );
 
   const byId = useMemo(() => new Map(parts.map((p) => [p.slug, p])), [parts]);
+  const navNames = useMemo(
+    () =>
+      Object.fromEntries(parts.map((p) => [p.slug, lang === 'he' ? p.nameHe : p.nameEn])),
+    [parts, lang],
+  );
   const isDone = useCallback((id: string) => done.has(id), [done]);
   const total = useMemo(() => summarize(units, isDone), [units, isDone]);
   const aliyot = useMemo(() => summarizeByAliyah(units, isDone), [units, isDone]);
@@ -133,6 +145,7 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
       <div className="sticky top-0 z-10 -mx-4 mb-4 border-b border-[var(--color-line)] bg-[var(--color-paper)]/95 px-4 pb-3 pt-2 backdrop-blur">
         <AliyahNav
           aliyot={navItems}
+          names={navNames}
           showSlug={parts.length > 1}
           onJump={jump}
           label={`${title} — ${t('aliyot')}`}
@@ -161,6 +174,7 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
                 hebrewStyle={settings.hebrewStyle}
                 showTranslation={settings.showTranslation}
                 rashiEnglish={settings.rashiEnglish}
+                rashiFallbackToOnkelos={rashiFallbackActive}
                 done={state === '1'}
                 rashi={rashi[unit.slug]}
                 rashiLoading={rashiLoading}
@@ -181,6 +195,7 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
               hebrewStyle={settings.hebrewStyle}
               showTranslation={settings.showTranslation}
               rashiEnglish={settings.rashiEnglish}
+              rashiFallbackToOnkelos={rashiFallbackActive}
               parallel={settings.parallel}
               state={state}
               expanded={expanded === unit.id}
