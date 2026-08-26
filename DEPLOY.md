@@ -5,6 +5,43 @@ The build is fully static, so any static host works. These are the two paths, bo
 Everything below is prepared and verified — the only steps that need you are the
 two authentication prompts, because they need your credentials.
 
+## How deploys happen
+
+Pushing to `main` runs CI, and if every check passes, CI publishes to Cloudflare
+Pages. A commit that fails typecheck, lint, tests or the size budget is never
+published.
+
+This needs two repository secrets. Until they are set, the deploy step reports a
+notice and does nothing — CI still passes.
+
+**1. Create a Cloudflare API token.** Go to
+[dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens)
+→ **Create Token** → use the **Edit Cloudflare Workers** template, or a custom
+token with the **Cloudflare Pages: Edit** permission on your account. Copy the
+token — it is shown only once.
+
+**2. Add both secrets to the repository:**
+
+```bash
+gh secret set CLOUDFLARE_API_TOKEN
+gh secret set CLOUDFLARE_ACCOUNT_ID
+```
+
+Each prompts for the value. The account ID is on the right-hand side of any
+domain's overview page in the Cloudflare dashboard, and `npx wrangler whoami`
+prints it too.
+
+After that, every push to `main` that passes CI deploys itself.
+
+### Deploying by hand
+
+The manual path still works and needs no secrets — useful for publishing
+something without committing it, or if CI is unavailable:
+
+```bash
+nvm use && npm run deploy
+```
+
 ## First: use the right Node version
 
 Wrangler needs Node 22+, and your shell may default to an older one. The version

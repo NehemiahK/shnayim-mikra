@@ -83,10 +83,11 @@ WebKit is opt-in locally (`PW_WEBKIT=1`) because its prebuilt binary segfaults o
 The build is fully static — any static host works, free. See **[DEPLOY.md](DEPLOY.md)**
 for the exact steps.
 
-The short version, from this directory:
+Pushing to `main` deploys automatically once CI passes — see
+[DEPLOY.md](DEPLOY.md) for the two secrets that enables. To publish by hand:
 
 ```bash
-nvm use && npx wrangler login && npm run deploy
+nvm use && npm run deploy
 ```
 
 That builds and publishes to Cloudflare Pages. `public/_headers` and

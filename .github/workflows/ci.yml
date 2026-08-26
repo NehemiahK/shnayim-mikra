@@ -47,3 +47,44 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+  # Publishing is gated on `verify` passing, so a broken commit cannot reach
+  # production. Inert until the Cloudflare secrets are set — it reports a
+  # notice and succeeds rather than failing the run.
+  deploy:
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check whether deployment is configured
+        id: config
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -n "$CF_API_TOKEN" ] && [ -n "$CF_ACCOUNT_ID" ]; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::Cloudflare secrets are not set, so nothing was published. See DEPLOY.md to enable automatic deploys.'
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.config.outputs.ready == 'true'
+      - uses: actions/setup-node@v7
+        if: steps.config.outputs.ready == 'true'
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+        if: steps.config.outputs.ready == 'true'
+      - run: npm run build
+        if: steps.config.outputs.ready == 'true'
+
+      - name: Publish to Cloudflare Pages
+        if: steps.config.outputs.ready == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=shnayim-mikra --branch=main
