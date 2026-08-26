@@ -66,7 +66,7 @@ npm run dev
 | `npm run data:build` | Re-fetch the corpus from Sefaria |
 | `npm run fonts:build` | Re-fetch the self-hosted Hebrew font |
 
-Node 22 (see `.nvmrc`). TypeScript runs with `strict`, `noUncheckedIndexedAccess`, and `exactOptionalPropertyTypes`.
+Node 22 (see `.nvmrc`) — run `nvm use` if your shell defaults to an older version. TypeScript runs with `strict`, `noUncheckedIndexedAccess`, and `exactOptionalPropertyTypes`.
 
 ### Testing
 
@@ -83,10 +83,10 @@ WebKit is opt-in locally (`PW_WEBKIT=1`) because its prebuilt binary segfaults o
 The build is fully static — any static host works, free. See **[DEPLOY.md](DEPLOY.md)**
 for the exact steps.
 
-The short version, once you have run `npx wrangler login`:
+The short version, from this directory:
 
 ```bash
-npm run deploy
+nvm use && npx wrangler login && npm run deploy
 ```
 
 That builds and publishes to Cloudflare Pages. `public/_headers` and

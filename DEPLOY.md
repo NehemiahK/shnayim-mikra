@@ -5,6 +5,26 @@ The build is fully static, so any static host works. These are the two paths, bo
 Everything below is prepared and verified — the only steps that need you are the
 two authentication prompts, because they need your credentials.
 
+## First: use the right Node version
+
+Wrangler needs Node 22+, and your shell may default to an older one. The version
+is pinned in `.nvmrc`, so from this directory:
+
+```bash
+nvm use
+```
+
+`npm run deploy` checks this first and will tell you if it is wrong, so you never
+get a confusing error from a tool deeper down.
+
+To switch automatically whenever you `cd` into a project, add to `~/.zshrc`:
+
+```bash
+autoload -U add-zsh-hook
+load-nvmrc() { [ -f .nvmrc ] && nvm use --silent; }
+add-zsh-hook chpwd load-nvmrc
+```
+
 ## Path A — deploy straight to Cloudflare Pages (fastest, no GitHub needed)
 
 ```bash

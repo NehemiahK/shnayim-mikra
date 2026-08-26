@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "engines": {
-    "node": ">=20.19"
+    "node": ">=22"
   },
   "scripts": {
     "dev": "vite",
@@ -18,8 +18,9 @@
     "test:e2e": "playwright test",
     "size": "tsx scripts/check-size.ts",
     "fonts:build": "tsx scripts/fetch-fonts.ts",
-    "deploy": "npm run build && wrangler pages deploy dist --project-name=shnayim-mikra --branch=main",
-    "deploy:preview": "npm run build && wrangler pages deploy dist --project-name=shnayim-mikra"
+    "deploy": "npm run check:node && npm run build && wrangler pages deploy dist --project-name=shnayim-mikra --branch=main",
+    "deploy:preview": "npm run check:node && npm run build && wrangler pages deploy dist --project-name=shnayim-mikra",
+    "check:node": "node scripts/check-node.mjs"
   },
   "dependencies": {
     "react": "^19.2.0",

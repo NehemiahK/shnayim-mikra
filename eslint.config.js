@@ -8,6 +8,11 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    // Plain Node scripts (the version preflight runs before any build step).
+    files: ['**/*.mjs'],
+    languageOptions: { ecmaVersion: 2022, globals: globals.node },
+  },
+  {
     files: ['**/*.{ts,tsx}'],
     languageOptions: { ecmaVersion: 2022, globals: { ...globals.browser, ...globals.node } },
     plugins: { 'react-hooks': reactHooks },
