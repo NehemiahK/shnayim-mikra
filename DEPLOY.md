@@ -33,12 +33,23 @@ npx wrangler login
 
 That opens a browser once and grants this machine access to your Cloudflare account. Then:
 
+Create the Pages project once (this does not happen automatically in a
+non-interactive shell):
+
+```bash
+npx wrangler pages project create shnayim-mikra --production-branch=main
+```
+
+Then, now and for every future update:
+
 ```bash
 npm run deploy
 ```
 
-That builds and uploads `dist/` to a Pages project called `shnayim-mikra`, creating
-the project on first run. You get a `https://shnayim-mikra.pages.dev` URL immediately.
+That builds and uploads `dist/` to the `shnayim-mikra` project, publishing to
+`https://shnayim-mikra.pages.dev`.
+
+**Already done** — the project exists and the first deploy is live.
 
 Re-run `npm run deploy` any time to publish an update.
 
