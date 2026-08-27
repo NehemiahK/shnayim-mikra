@@ -149,13 +149,6 @@ export function Settings(): React.JSX.Element {
       </Section>
 
       <Section title={t('sectionBehaviour')}>
-        <Row label={t('autoAdvance')} help={t('autoAdvanceHelp')}>
-          <Toggle
-            label={t('autoAdvance')}
-            checked={settings.autoAdvance}
-            onChange={(v) => { set('autoAdvance', v); }}
-          />
-        </Row>
         <Row stacked label={t('region')} help={t('regionHelp')}>
           <Choice
             label={t('region')}

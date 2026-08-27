@@ -91,52 +91,52 @@ test.describe('reading a verse', () => {
   });
 });
 
-test.describe('auto-scroll after completing a verse', () => {
-  // A `behavior: 'smooth'` scrollIntoView called from this app's completion
-  // effect was silently swallowed — no error, no movement, confirmed via a
-  // real browser (not a mock) — while the identical call worked immediately
-  // from outside React. 'instant' sidesteps it. These guard the fix, and the
-  // default-off / keyboard-always-on split real feedback asked for.
-  test('does not scroll by default — real feedback was that it fought manual scrolling on mobile', async ({
-    page,
-  }) => {
+test.describe('no automatic scrolling on completion', () => {
+  // The feature was removed outright rather than tuned further — real
+  // feedback was that any automatic scroll fought a mobile reader's own
+  // scrolling more than it helped, even once the "silently does nothing"
+  // bug it originally shipped with was fixed. Completing something updates
+  // in place; nothing moves the viewport on its own.
+  test('the whole-verse checkbox does not scroll', async ({ page }) => {
     await page.goto(`/p/${PARSHA}`);
     const before = await page.evaluate(() => window.scrollY);
     await page.getByRole('checkbox', { name: /Mark verse read/u }).first().click();
     await page.waitForTimeout(300);
-    const after = await page.evaluate(() => window.scrollY);
-    expect(after).toBe(before);
+    expect(await page.evaluate(() => window.scrollY)).toBe(before);
   });
 
-  test('scrolls reliably once enabled in Settings', async ({ page }) => {
-    await setSettings(page, { autoAdvance: true });
+  test('a single dot does not scroll', async ({ page }) => {
     await page.goto(`/p/${PARSHA}`);
     const before = await page.evaluate(() => window.scrollY);
-    await page.getByRole('checkbox', { name: /Mark verse read/u }).first().click();
-    await expect
-      .poll(() => page.evaluate(() => window.scrollY))
-      .toBeGreaterThan(before);
+    await page.getByRole('button', { name: 'Mikra 26:1', exact: true }).click();
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => window.scrollY)).toBe(before);
   });
 
-  test('the aliyah-nav jump-to button scrolls reliably regardless of the setting', async ({ page }) => {
-    await page.goto(`/p/${PARSHA}`);
-    await page.evaluate(() => window.scrollTo(0, 0));
-    const before = await page.evaluate(() => window.scrollY);
-
-    await page.getByRole('radiogroup', { name: 'Third reading' }).waitFor();
-    const nav = page.locator('nav').first();
-    await nav.getByRole('button').nth(3).click();
-
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before);
-  });
-
-  test('the keyboard shortcut scrolls even though the default is off', async ({ page }) => {
+  test('the keyboard shortcut completes the next verse without scrolling', async ({ page }) => {
     await page.goto(`/p/${PARSHA}`);
     await expect(page.locator('article[id^="unit-"]').first()).toBeVisible();
     const before = await page.evaluate(() => window.scrollY);
 
     await page.evaluate(() => { document.body.focus(); });
     await page.keyboard.press(' ');
+
+    await expect(page.locator('#unit-ki-tavo\\:26\\:1').getByRole('checkbox')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    expect(await page.evaluate(() => window.scrollY)).toBe(before);
+  });
+
+  test('the aliyah-nav jump-to button still scrolls — that is direct navigation, not "auto" scroll', async ({
+    page,
+  }) => {
+    await page.goto(`/p/${PARSHA}`);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    const before = await page.evaluate(() => window.scrollY);
+
+    const nav = page.locator('nav').first();
+    await nav.getByRole('button').nth(3).click();
 
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before);
   });

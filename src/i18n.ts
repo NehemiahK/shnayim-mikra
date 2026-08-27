@@ -78,8 +78,6 @@ const en = {
   parallel: 'Side by side',
   parallelHelp: 'On wider screens, place the Targum beside the Hebrew.',
 
-  autoAdvance: 'Scroll to next automatically',
-  autoAdvanceHelp: 'Jump to the next verse after marking one done. Off by default; the keyboard shortcut always does this regardless.',
   theme: 'Theme',
   themeLight: 'Light',
   themeDark: 'Dark',
@@ -188,8 +186,6 @@ const he: Dict = {
   parallel: 'זה לצד זה',
   parallelHelp: 'במסכים רחבים, הצג את התרגום לצד המקרא.',
 
-  autoAdvance: 'גלילה אוטומטית לבא',
-  autoAdvanceHelp: 'קפוץ לפסוק הבא לאחר סימון פסוק כנקרא. כבוי כברירת מחדל; קיצור המקלדת תמיד עושה זאת בכל מקרה.',
   theme: 'ערכת נושא',
   themeLight: 'בהיר',
   themeDark: 'כהה',

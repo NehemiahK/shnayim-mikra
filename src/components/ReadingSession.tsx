@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ParshaText, RashiText } from '../lib/types.js';
 import {
   buildReadingUnits,
@@ -34,7 +34,6 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
   const [expanded, setExpanded] = useState<string | null>(null);
   const [rashi, setRashi] = useState<Record<string, RashiText>>({});
   const [rashiLoading, setRashiLoading] = useState(false);
-  const pendingScroll = useRef<string | null>(null);
 
   // Only meaningful when Rashi is the *sole* third reading — in "both" mode
   // Onkelos already has its own dedicated step, so falling back to it again
@@ -88,36 +87,9 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
 
   useEffect(() => { syncSummary(total.total); }, [syncSummary, total.total, total.done]);
 
-  // Scroll only after the DOM reflects the completion that triggered it.
-  //
-  // Deliberately 'instant', not 'smooth': a smooth scrollIntoView called from
-  // inside this effect was silently swallowed in testing — scrollY simply
-  // never moved, with no error — while the identical call worked immediately
-  // when run directly from the console. The concurrent re-render this effect
-  // runs alongside (progress bar width transition, summary sync) is the
-  // likely culprit, but instant sidesteps it entirely and is reliable in
-  // every case tested, so it is the fix rather than something to keep
-  // chasing.
-  useEffect(() => {
-    const target = pendingScroll.current;
-    if (target === null) return;
-    pendingScroll.current = null;
-    const next = nextIncomplete(units, isDone);
-    const id = next ? `unit-${next.unit.id}` : null;
-    if (id === null || id === `unit-${target}`) return;
-    document.getElementById(id)?.scrollIntoView({ block: 'center', behavior: 'instant' });
-  }, [units, isDone]);
-
-  // Both handlers read the store directly rather than closing over `done`.
-  // Taps arrive faster than React re-renders, and a stale closure would make a
-  // quick double-tap register only the first of the two Mikra readings.
   const handleToggle = useCallback(
-    (unitId: string, stepId: string) => {
-      const wasDone = useProgress.getState().done.has(stepId);
-      toggle(stepId);
-      if (!wasDone && settings.autoAdvance) pendingScroll.current = unitId;
-    },
-    [toggle, settings.autoAdvance],
+    (stepId: string) => { toggle(stepId); },
+    [toggle],
   );
 
   const handleAdvance = useCallback(
@@ -129,31 +101,29 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
       const next = candidates.find((s) => !current.has(s.id));
       if (!next) return;
       setDone([next.id], true);
-      if (settings.autoAdvance) pendingScroll.current = unit.id;
     },
-    [setDone, settings.autoAdvance],
+    [setDone],
   );
 
   // Marks (or un-marks) every step of one unit at once — the mobile "just get
-  // through this verse" checkbox, and the target the keyboard shortcut below
-  // acts on. Completing scrolls to what's next, matching every other
-  // completion path; undoing does not, since there is nothing to advance to.
+  // through this verse" checkbox, and what the keyboard shortcut below acts on.
   const handleToggleAll = useCallback(
     (unit: ReadingUnit) => {
       const ids = unit.steps.map((s) => s.id);
       const current = useProgress.getState().done;
       const wasAllDone = ids.every((id) => current.has(id));
       setDone(ids, !wasAllDone);
-      if (!wasAllDone && settings.autoAdvance) pendingScroll.current = unit.id;
     },
-    [setDone, settings.autoAdvance],
+    [setDone],
   );
 
-  // Space (or Enter) completes the next unread unit and jumps to it, so a
-  // keyboard user can power through a parsha without ever touching a mouse or
-  // tabbing between three separate dots per verse. Guarded to only fire when
-  // nothing more specific already has focus — tabbing to a single dot on
-  // purpose and pressing Space there still toggles just that dot, not this.
+  // Space (or Enter) completes the next unread unit, so a keyboard user can
+  // power through a parsha without tabbing between three separate dots per
+  // verse. Guarded to only fire when nothing more specific already has focus —
+  // tabbing to a single dot on purpose and pressing Space there still toggles
+  // just that dot, not this. Does not scroll: completing something already on
+  // screen updates in place, and this app does not auto-scroll the reader
+  // anywhere on its own.
   useEffect(() => {
     const handler = (e: KeyboardEvent): void => {
       if (e.key !== ' ' && e.key !== 'Enter') return;
@@ -165,7 +135,6 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
       if (!next) return;
       e.preventDefault();
       setDone(next.unit.steps.map((s) => s.id), true);
-      pendingScroll.current = next.unit.id;
     };
     document.addEventListener('keydown', handler);
     return () => { document.removeEventListener('keydown', handler); };
@@ -180,12 +149,13 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
     [aliyot],
   );
 
+  // Explicit navigation, not "auto" scroll: the reader tapped this specific
+  // aliyah number and asked to go there. 'instant' because a CSS-level smooth
+  // scroll-behavior default silently failed to move the page when triggered
+  // from inside a React callback here — confirmed directly, not assumed.
   const jump = useCallback(
     (key: string) => {
       const first = units.find((u) => `${u.slug}:${String(u.aliyah)}` === key);
-      // Same 'instant' fix as above — this relied on the CSS-level smooth
-      // scroll-behavior default, which failed the same way when triggered
-      // from this callback.
       if (first) document.getElementById(`unit-${first.id}`)?.scrollIntoView({ block: 'start', behavior: 'instant' });
     },
     [units],
@@ -252,7 +222,7 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
                 rashi={rashi[unit.slug]}
                 rashiLoading={rashiLoading}
                 t={t}
-                onToggle={() => { if (step) handleToggle(unit.id, step.id); }}
+                onToggle={() => { if (step) handleToggle(step.id); }}
               />
             );
           }
@@ -275,7 +245,7 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
               rashi={rashi[unit.slug]?.comments[key]}
               rashiLoading={rashiLoading}
               t={t}
-              onToggleStep={(stepId) => { handleToggle(unit.id, stepId); }}
+              onToggleStep={(stepId) => { handleToggle(stepId); }}
               onAdvance={(kind) => { handleAdvance(unit, kind); }}
               onToggleExpand={() => { setExpanded((cur) => (cur === unit.id ? null : unit.id)); }}
               onToggleAll={() => { handleToggleAll(unit); }}
