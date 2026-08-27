@@ -91,12 +91,11 @@ test.describe('reading a verse', () => {
   });
 });
 
-test.describe('no automatic scrolling on completion', () => {
-  // The feature was removed outright rather than tuned further — real
-  // feedback was that any automatic scroll fought a mobile reader's own
-  // scrolling more than it helped, even once the "silently does nothing"
-  // bug it originally shipped with was fixed. Completing something updates
-  // in place; nothing moves the viewport on its own.
+test.describe('scrolling', () => {
+  // Tapping must never move the page — that was the intrusive behaviour.
+  // Keyboard use is the exception: pressing Space with nothing focused gives
+  // no other signal about where you now are, and even then it only scrolls
+  // when the target is genuinely not visible.
   test('the whole-verse checkbox does not scroll', async ({ page }) => {
     await page.goto(`/p/${PARSHA}`);
     const before = await page.evaluate(() => window.scrollY);
@@ -113,24 +112,111 @@ test.describe('no automatic scrolling on completion', () => {
     expect(await page.evaluate(() => window.scrollY)).toBe(before);
   });
 
-  test('the keyboard shortcut completes the next verse without scrolling', async ({ page }) => {
+  test('Space does not scroll while the current verse is still on screen', async ({ page }) => {
     await page.goto(`/p/${PARSHA}`);
     await expect(page.locator('article[id^="unit-"]').first()).toBeVisible();
-    const before = await page.evaluate(() => window.scrollY);
-
     await page.evaluate(() => { document.body.focus(); });
-    await page.keyboard.press(' ');
 
-    await expect(page.locator('#unit-ki-tavo\\:26\\:1').getByRole('checkbox')).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
+    const before = await page.evaluate(() => window.scrollY);
+    // First verse is at the top of the page; working through its readings
+    // should leave the viewport completely still.
+    await page.keyboard.press(' ');
+    await page.waitForTimeout(250);
+    expect(await page.evaluate(() => window.scrollY)).toBe(before);
+    await page.keyboard.press(' ');
+    await page.waitForTimeout(250);
     expect(await page.evaluate(() => window.scrollY)).toBe(before);
   });
 
-  test('the aliyah-nav jump-to button still scrolls — that is direct navigation, not "auto" scroll', async ({
-    page,
-  }) => {
+  test('Space scrolls once the next reading would be off screen', async ({ page }) => {
+    await page.goto(`/p/${PARSHA}`);
+    await expect(page.locator('article[id^="unit-"]').first()).toBeVisible();
+    await page.evaluate(() => { document.body.focus(); });
+
+    // Work far enough down that the next verse cannot still be in view.
+    for (let i = 0; i < 24; i++) await page.keyboard.press(' ');
+
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  });
+
+  test('never leaves the next reading hidden under the sticky header', async ({ page }) => {
+    await page.goto(`/p/${PARSHA}`);
+    await expect(page.locator('article[id^="unit-"]').first()).toBeVisible();
+    await page.evaluate(() => { document.body.focus(); });
+
+    for (let i = 0; i < 30; i++) await page.keyboard.press(' ');
+    await page.waitForTimeout(600); // let any smooth scroll settle
+
+    const clear = await page.evaluate(() => {
+      const header = document.querySelector('.sticky');
+      const card = [...document.querySelectorAll('article[id^="unit-"]')].find((c) =>
+        c.querySelector('[role="checkbox"][aria-checked="false"], [role="checkbox"][aria-checked="mixed"]'),
+      );
+      if (!header || !card) return null;
+      const h = header.getBoundingClientRect().bottom;
+      const r = card.getBoundingClientRect();
+      return { cardTop: r.top, headerBottom: h, withinViewport: r.top < window.innerHeight };
+    });
+
+    expect(clear).not.toBeNull();
+    // The next thing to read must start below the header, not behind it.
+    expect(clear!.cardTop).toBeGreaterThanOrEqual(clear!.headerBottom);
+    expect(clear!.withinViewport).toBe(true);
+  });
+
+  test('scrolls about once per verse, not on every press', async ({ page }) => {
+    // Regression guard. With a smooth scroll this compounded badly: a press
+    // arriving mid-animation measured a still-moving page and stacked another
+    // scroll on top, turning once-per-verse into scrolling on 38 of 40
+    // presses.
+    await page.goto(`/p/${PARSHA}`);
+    await expect(page.locator('article[id^="unit-"]').first()).toBeVisible();
+    await page.evaluate(() => { document.body.focus(); });
+
+    const positions: number[] = [];
+    for (let i = 0; i < 12; i++) {
+      await page.keyboard.press(' ');
+      await page.waitForTimeout(250);
+      positions.push(Math.round(await page.evaluate(() => window.scrollY)));
+    }
+
+    const moves = positions.filter((y, i) => i > 0 && y !== positions[i - 1]).length;
+    // Three readings per verse, so roughly a third of presses should move.
+    expect(moves).toBeGreaterThan(0);
+    expect(moves).toBeLessThanOrEqual(5);
+  });
+
+  test('every press advances exactly one reading, however fast they arrive', async ({ page }) => {
+    // The keyboard handler reads progress from the store rather than its
+    // render closure. Reading the closure meant presses landing before React
+    // re-rendered all saw the same "next" step, so holding the key marked one
+    // reading repeatedly instead of moving through them.
+    const runAt = async (gap: number): Promise<string[]> => {
+      await page.goto(`/p/${PARSHA}`);
+      // Progress persists in localStorage, so the second run would otherwise
+      // continue from where the first stopped.
+      await page.evaluate(() => { localStorage.clear(); });
+      await page.reload();
+      await expect(page.locator('article[id^="unit-"]').first()).toBeVisible();
+      await page.evaluate(() => { document.body.focus(); });
+      for (let i = 0; i < 12; i++) {
+        await page.keyboard.press(' ');
+        if (gap > 0) await page.waitForTimeout(gap);
+      }
+      await page.waitForTimeout(400);
+      return page.evaluate(
+        () => JSON.parse(localStorage.getItem('sm:progress:v1:ki-tavo') ?? '[]') as string[],
+      );
+    };
+
+    const fast = await runAt(0);
+    const slow = await runAt(300);
+
+    expect(fast).toHaveLength(12);
+    expect([...fast].sort()).toEqual([...slow].sort());
+  });
+
+  test('the aliyah-nav jump-to button scrolls — that is direct navigation', async ({ page }) => {
     await page.goto(`/p/${PARSHA}`);
     await page.evaluate(() => window.scrollTo(0, 0));
     const before = await page.evaluate(() => window.scrollY);
@@ -196,25 +282,45 @@ test.describe('whole-verse checkbox', () => {
 });
 
 test.describe('keyboard shortcut', () => {
-  test('Space completes the next unread verse and moves to the one after', async ({ page }) => {
+  test('each press checks off one reading, not the whole verse', async ({ page }) => {
     await page.goto(`/p/${PARSHA}`);
     await expect(page.locator('article[id^="unit-"]').first()).toBeVisible();
     // A keyboard-only user who has not yet tabbed to anything specific has
     // focus resting on the document body — set that explicitly rather than
     // trusting a click not to land on the back link in the corner.
     await page.evaluate(() => { document.body.focus(); });
-    await page.keyboard.press(' ');
 
     const first = page.locator('#unit-ki-tavo\\:26\\:1');
-    for (const dot of await first.locator('button[aria-pressed]').all()) {
-      await expect(dot).toHaveAttribute('aria-pressed', 'true');
-    }
+    const dots = first.locator('button[aria-pressed]');
 
     await page.keyboard.press(' ');
-    const second = page.locator('#unit-ki-tavo\\:26\\:2');
-    for (const dot of await second.locator('button[aria-pressed]').all()) {
-      await expect(dot).toHaveAttribute('aria-pressed', 'true');
-    }
+    await expect(dots.nth(0)).toHaveAttribute('aria-pressed', 'true');
+    await expect(dots.nth(1)).toHaveAttribute('aria-pressed', 'false');
+    await expect(dots.nth(2)).toHaveAttribute('aria-pressed', 'false');
+
+    await page.keyboard.press(' ');
+    await expect(dots.nth(1)).toHaveAttribute('aria-pressed', 'true');
+    await expect(dots.nth(2)).toHaveAttribute('aria-pressed', 'false');
+
+    await page.keyboard.press(' ');
+    await expect(dots.nth(2)).toHaveAttribute('aria-pressed', 'true');
+    await expect(first.getByRole('checkbox')).toHaveAttribute('aria-checked', 'true');
+  });
+
+  test('carries on into the next verse once one is finished', async ({ page }) => {
+    await page.goto(`/p/${PARSHA}`);
+    await expect(page.locator('article[id^="unit-"]').first()).toBeVisible();
+    await page.evaluate(() => { document.body.focus(); });
+
+    // Three readings finishes verse 1; the fourth starts verse 2.
+    for (let i = 0; i < 4; i++) await page.keyboard.press(' ');
+
+    await expect(
+      page.locator('#unit-ki-tavo\\:26\\:1').getByRole('checkbox'),
+    ).toHaveAttribute('aria-checked', 'true');
+    await expect(
+      page.locator('#unit-ki-tavo\\:26\\:2').getByRole('checkbox'),
+    ).toHaveAttribute('aria-checked', 'mixed');
   });
 
   test('Enter works the same way as Space', async ({ page }) => {
@@ -224,8 +330,8 @@ test.describe('keyboard shortcut', () => {
     await page.keyboard.press('Enter');
 
     const first = page.locator('#unit-ki-tavo\\:26\\:1');
-    await expect(first.getByRole('checkbox', { name: /Mark verse read/u })).toHaveAttribute(
-      'aria-checked',
+    await expect(first.locator('button[aria-pressed]').nth(0)).toHaveAttribute(
+      'aria-pressed',
       'true',
     );
   });
@@ -250,7 +356,7 @@ test.describe('keyboard shortcut', () => {
 
   test('shows a hint on desktop but not on a touch device', async ({ page, isMobile }) => {
     await page.goto(`/p/${PARSHA}`);
-    const hint = page.getByText('Press Space to mark the next verse and move on');
+    const hint = page.getByText('Press Space to check off each reading as you go');
     if (isMobile) {
       await expect(hint).toBeHidden();
     } else {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ParshaText, RashiText } from '../lib/types.js';
 import {
   buildReadingUnits,
@@ -8,6 +8,7 @@ import {
   type ReadingUnit,
 } from '../lib/reading-units.js';
 import { loadRashi } from '../lib/data.js';
+import { revealElement } from '../lib/scroll.js';
 import { useProgress } from '../store/progress.js';
 import { useSettings } from '../store/settings.js';
 import { useT } from '../hooks/useT.js';
@@ -34,6 +35,8 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
   const [expanded, setExpanded] = useState<string | null>(null);
   const [rashi, setRashi] = useState<Record<string, RashiText>>({});
   const [rashiLoading, setRashiLoading] = useState(false);
+  const pendingScroll = useRef(false);
+  const headerRef = useRef<HTMLDivElement>(null);
 
   // Only meaningful when Rashi is the *sole* third reading — in "both" mode
   // Onkelos already has its own dedicated step, so falling back to it again
@@ -117,13 +120,11 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
     [setDone],
   );
 
-  // Space (or Enter) completes the next unread unit, so a keyboard user can
-  // power through a parsha without tabbing between three separate dots per
-  // verse. Guarded to only fire when nothing more specific already has focus —
-  // tabbing to a single dot on purpose and pressing Space there still toggles
-  // just that dot, not this. Does not scroll: completing something already on
-  // screen updates in place, and this app does not auto-scroll the reader
-  // anywhere on its own.
+  // Space (or Enter) checks off one reading — the next unread step, not the
+  // whole verse. Pressing it mirrors what you actually did: read the Hebrew,
+  // press; read it again, press; read the Targum, press. Guarded to only fire
+  // when nothing more specific already has focus, so tabbing to a single dot
+  // on purpose and pressing Space there still toggles just that dot.
   useEffect(() => {
     const handler = (e: KeyboardEvent): void => {
       if (e.key !== ' ' && e.key !== 'Enter') return;
@@ -131,14 +132,35 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
       const active = document.activeElement;
       if (active && active !== document.body) return;
 
-      const next = nextIncomplete(units, isDone);
+      // Read progress from the store, not the render closure: presses arrive
+      // faster than React re-renders, and a stale closure would keep handing
+      // back the same "next" step, so holding the key down would mark one
+      // reading over and over instead of advancing. Same failure mode the
+      // rapid-tap handlers above are written to avoid.
+      const current = useProgress.getState().done;
+      const next = nextIncomplete(units, (id) => current.has(id));
       if (!next) return;
       e.preventDefault();
-      setDone(next.unit.steps.map((s) => s.id), true);
+      setDone([next.step.id], true);
+      pendingScroll.current = true;
     };
     document.addEventListener('keydown', handler);
     return () => { document.removeEventListener('keydown', handler); };
-  }, [units, isDone, setDone]);
+  }, [units, setDone]);
+
+  // Keep whatever should be read next in view after a keyboard press — but
+  // only when it isn't already, which while working down a verse is most of
+  // the time. Deliberately not wired to taps: a reader who just tapped
+  // something is already looking at it, and moving the page under them was
+  // the thing that made the old always-scroll behaviour intrusive.
+  useEffect(() => {
+    if (!pendingScroll.current) return;
+    pendingScroll.current = false;
+    const next = nextIncomplete(units, isDone);
+    if (!next) return;
+    const el = document.getElementById(`unit-${next.unit.id}`);
+    if (el) revealElement(el, headerRef.current);
+  }, [units, isDone]);
 
   const navItems = useMemo(
     () =>
@@ -150,9 +172,9 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
   );
 
   // Explicit navigation, not "auto" scroll: the reader tapped this specific
-  // aliyah number and asked to go there. 'instant' because a CSS-level smooth
-  // scroll-behavior default silently failed to move the page when triggered
-  // from inside a React callback here — confirmed directly, not assumed.
+  // aliyah number and asked to go there. Instant rather than smooth because
+  // an aliyah can be thousands of pixels away, and animating that far is slow
+  // and disorienting rather than pleasant.
   const jump = useCallback(
     (key: string) => {
       const first = units.find((u) => `${u.slug}:${String(u.aliyah)}` === key);
@@ -163,7 +185,10 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
 
   return (
     <div>
-      <div className="sticky top-0 z-10 -mx-4 mb-4 border-b border-[var(--color-line)] bg-[var(--color-paper)]/95 px-4 pb-3 pt-2 backdrop-blur">
+      <div
+        ref={headerRef}
+        className="sticky top-0 z-10 -mx-4 mb-4 border-b border-[var(--color-line)] bg-[var(--color-paper)]/95 px-4 pb-3 pt-2 backdrop-blur"
+      >
         {/*
           Reachable here, not only in Settings — switching mid-parsha (e.g. a
           verse turns out to have no Rashi) shouldn't mean navigating away
