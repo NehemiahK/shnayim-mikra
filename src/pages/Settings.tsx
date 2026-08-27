@@ -149,7 +149,7 @@ export function Settings(): React.JSX.Element {
       </Section>
 
       <Section title={t('sectionBehaviour')}>
-        <Row label={t('autoAdvance')}>
+        <Row label={t('autoAdvance')} help={t('autoAdvanceHelp')}>
           <Toggle
             label={t('autoAdvance')}
             checked={settings.autoAdvance}

@@ -40,7 +40,12 @@ export const DEFAULT_SETTINGS: Settings = {
   rashiEnglish: false,
   parallel: false,
   theme: 'system',
-  autoAdvance: true,
+  // Off by default: real-world feedback on mobile was that jumping the
+  // viewport after every single tap fought the reader's own scrolling more
+  // than it helped. Still available here for anyone who wants it, and the
+  // keyboard shortcut always scrolls regardless of this setting, since
+  // there is no other way to see what it just did.
+  autoAdvance: false,
   region: 'diaspora',
   uiLang: 'en',
 };
@@ -69,7 +74,7 @@ function coerce(raw: unknown): Settings {
     rashiEnglish: typeof v.rashiEnglish === 'boolean' ? v.rashiEnglish : false,
     parallel: typeof v.parallel === 'boolean' ? v.parallel : false,
     theme: pick('theme', ['light', 'dark', 'system']),
-    autoAdvance: typeof v.autoAdvance === 'boolean' ? v.autoAdvance : true,
+    autoAdvance: typeof v.autoAdvance === 'boolean' ? v.autoAdvance : false,
     region: pick('region', ['diaspora', 'israel']),
     uiLang: pick('uiLang', ['en', 'he']),
   };

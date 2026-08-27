@@ -89,6 +89,15 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
   useEffect(() => { syncSummary(total.total); }, [syncSummary, total.total, total.done]);
 
   // Scroll only after the DOM reflects the completion that triggered it.
+  //
+  // Deliberately 'instant', not 'smooth': a smooth scrollIntoView called from
+  // inside this effect was silently swallowed in testing — scrollY simply
+  // never moved, with no error — while the identical call worked immediately
+  // when run directly from the console. The concurrent re-render this effect
+  // runs alongside (progress bar width transition, summary sync) is the
+  // likely culprit, but instant sidesteps it entirely and is reliable in
+  // every case tested, so it is the fix rather than something to keep
+  // chasing.
   useEffect(() => {
     const target = pendingScroll.current;
     if (target === null) return;
@@ -96,7 +105,7 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
     const next = nextIncomplete(units, isDone);
     const id = next ? `unit-${next.unit.id}` : null;
     if (id === null || id === `unit-${target}`) return;
-    document.getElementById(id)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    document.getElementById(id)?.scrollIntoView({ block: 'center', behavior: 'instant' });
   }, [units, isDone]);
 
   // Both handlers read the store directly rather than closing over `done`.
@@ -174,7 +183,10 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
   const jump = useCallback(
     (key: string) => {
       const first = units.find((u) => `${u.slug}:${String(u.aliyah)}` === key);
-      if (first) document.getElementById(`unit-${first.id}`)?.scrollIntoView({ block: 'start' });
+      // Same 'instant' fix as above — this relied on the CSS-level smooth
+      // scroll-behavior default, which failed the same way when triggered
+      // from this callback.
+      if (first) document.getElementById(`unit-${first.id}`)?.scrollIntoView({ block: 'start', behavior: 'instant' });
     },
     [units],
   );
