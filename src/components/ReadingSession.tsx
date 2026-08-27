@@ -125,6 +125,43 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
     [setDone, settings.autoAdvance],
   );
 
+  // Marks (or un-marks) every step of one unit at once — the mobile "just get
+  // through this verse" checkbox, and the target the keyboard shortcut below
+  // acts on. Completing scrolls to what's next, matching every other
+  // completion path; undoing does not, since there is nothing to advance to.
+  const handleToggleAll = useCallback(
+    (unit: ReadingUnit) => {
+      const ids = unit.steps.map((s) => s.id);
+      const current = useProgress.getState().done;
+      const wasAllDone = ids.every((id) => current.has(id));
+      setDone(ids, !wasAllDone);
+      if (!wasAllDone && settings.autoAdvance) pendingScroll.current = unit.id;
+    },
+    [setDone, settings.autoAdvance],
+  );
+
+  // Space (or Enter) completes the next unread unit and jumps to it, so a
+  // keyboard user can power through a parsha without ever touching a mouse or
+  // tabbing between three separate dots per verse. Guarded to only fire when
+  // nothing more specific already has focus — tabbing to a single dot on
+  // purpose and pressing Space there still toggles just that dot, not this.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent): void => {
+      if (e.key !== ' ' && e.key !== 'Enter') return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const active = document.activeElement;
+      if (active && active !== document.body) return;
+
+      const next = nextIncomplete(units, isDone);
+      if (!next) return;
+      e.preventDefault();
+      setDone(next.unit.steps.map((s) => s.id), true);
+      pendingScroll.current = next.unit.id;
+    };
+    document.addEventListener('keydown', handler);
+    return () => { document.removeEventListener('keydown', handler); };
+  }, [units, isDone, setDone]);
+
   const navItems = useMemo(
     () =>
       [...aliyot.entries()].map(([key, summary]) => {
@@ -177,6 +214,9 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
             {total.done}/{total.total}
           </span>
         </div>
+        {/* No physical spacebar on a touchscreen, so this only ever shows up
+            for a mouse/trackpad + keyboard setup — never adds clutter on mobile. */}
+        <p className="kbd-hint mt-1 text-xs text-[var(--color-muted)]">{t('keyboardHint')}</p>
       </div>
 
       <div className="space-y-3 pb-24">
@@ -226,6 +266,7 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
               onToggleStep={(stepId) => { handleToggle(unit.id, stepId); }}
               onAdvance={(kind) => { handleAdvance(unit, kind); }}
               onToggleExpand={() => { setExpanded((cur) => (cur === unit.id ? null : unit.id)); }}
+              onToggleAll={() => { handleToggleAll(unit); }}
             />
           );
         })}

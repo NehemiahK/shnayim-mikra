@@ -91,6 +91,123 @@ test.describe('reading a verse', () => {
   });
 });
 
+test.describe('whole-verse checkbox', () => {
+  test('marks every step of a verse done in one tap', async ({ page }) => {
+    await page.goto(`/p/${PARSHA}`);
+    const card = page.locator('article[id^="unit-"]').first();
+    const checkbox = card.getByRole('checkbox', { name: /Mark verse read/u });
+    await expect(checkbox).toHaveAttribute('aria-checked', 'false');
+
+    await checkbox.click();
+
+    await expect(checkbox).toHaveAttribute('aria-checked', 'true');
+    for (const dot of await card.locator('button[aria-pressed]').all()) {
+      await expect(dot).toHaveAttribute('aria-pressed', 'true');
+    }
+  });
+
+  test('undoes the whole verse on a second tap', async ({ page }) => {
+    await page.goto(`/p/${PARSHA}`);
+    const card = page.locator('article[id^="unit-"]').first();
+    const checkbox = card.getByRole('checkbox', { name: /Mark verse read/u });
+
+    await checkbox.click();
+    await checkbox.click();
+
+    await expect(checkbox).toHaveAttribute('aria-checked', 'false');
+    for (const dot of await card.locator('button[aria-pressed]').all()) {
+      await expect(dot).toHaveAttribute('aria-pressed', 'false');
+    }
+  });
+
+  test('shows mixed state after only a partial reading, and completes from there', async ({ page }) => {
+    await page.goto(`/p/${PARSHA}`);
+    const card = page.locator('article[id^="unit-"]').first();
+    const checkbox = card.getByRole('checkbox', { name: /Mark verse read/u });
+
+    await card.getByRole('button', { name: 'Mikra 26:1', exact: true }).click();
+    await expect(checkbox).toHaveAttribute('aria-checked', 'mixed');
+
+    await checkbox.click();
+    await expect(checkbox).toHaveAttribute('aria-checked', 'true');
+  });
+
+  test('persists across a reload like any other completion', async ({ page }) => {
+    await page.goto(`/p/${PARSHA}`);
+    const card = page.locator('article[id^="unit-"]').first();
+    await card.getByRole('checkbox', { name: /Mark verse read/u }).click();
+
+    await page.reload();
+    await expect(
+      page.locator('article[id^="unit-"]').first().getByRole('checkbox', { name: /Mark verse read/u }),
+    ).toHaveAttribute('aria-checked', 'true');
+  });
+});
+
+test.describe('keyboard shortcut', () => {
+  test('Space completes the next unread verse and moves to the one after', async ({ page }) => {
+    await page.goto(`/p/${PARSHA}`);
+    await expect(page.locator('article[id^="unit-"]').first()).toBeVisible();
+    // A keyboard-only user who has not yet tabbed to anything specific has
+    // focus resting on the document body — set that explicitly rather than
+    // trusting a click not to land on the back link in the corner.
+    await page.evaluate(() => { document.body.focus(); });
+    await page.keyboard.press(' ');
+
+    const first = page.locator('#unit-ki-tavo\\:26\\:1');
+    for (const dot of await first.locator('button[aria-pressed]').all()) {
+      await expect(dot).toHaveAttribute('aria-pressed', 'true');
+    }
+
+    await page.keyboard.press(' ');
+    const second = page.locator('#unit-ki-tavo\\:26\\:2');
+    for (const dot of await second.locator('button[aria-pressed]').all()) {
+      await expect(dot).toHaveAttribute('aria-pressed', 'true');
+    }
+  });
+
+  test('Enter works the same way as Space', async ({ page }) => {
+    await page.goto(`/p/${PARSHA}`);
+    await expect(page.locator('article[id^="unit-"]').first()).toBeVisible();
+    await page.evaluate(() => { document.body.focus(); });
+    await page.keyboard.press('Enter');
+
+    const first = page.locator('#unit-ki-tavo\\:26\\:1');
+    await expect(first.getByRole('checkbox', { name: /Mark verse read/u })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+  });
+
+  test('does not fire while a specific control has keyboard focus', async ({ page }) => {
+    await page.goto(`/p/${PARSHA}`);
+    const card = page.locator('article[id^="unit-"]').first();
+    // Tab to a specific dot on purpose, then press Space — this must toggle
+    // only that one dot, exactly as clicking it would, not the whole verse.
+    await card.getByRole('button', { name: 'Mikra first reading 26:1' }).focus();
+    await page.keyboard.press(' ');
+
+    await expect(card.getByRole('button', { name: 'Mikra first reading 26:1' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await expect(card.getByRole('button', { name: 'Mikra second reading 26:1' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
+
+  test('shows a hint on desktop but not on a touch device', async ({ page, isMobile }) => {
+    await page.goto(`/p/${PARSHA}`);
+    const hint = page.getByText('Press Space to mark the next verse and move on');
+    if (isMobile) {
+      await expect(hint).toBeHidden();
+    } else {
+      await expect(hint).toBeVisible();
+    }
+  });
+});
+
 test.describe('Rashi and translation', () => {
   test('expanding a verse loads Rashi and the translation', async ({ page }) => {
     await page.goto(`/p/${PARSHA}`);

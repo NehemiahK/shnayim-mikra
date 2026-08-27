@@ -51,6 +51,7 @@ function setup(over: Partial<VerseCardProps> = {}, targum: TargumSource = 'onkel
     onToggleStep: vi.fn(),
     onAdvance: vi.fn(),
     onToggleExpand: vi.fn(),
+    onToggleAll: vi.fn(),
     ...over,
   };
   render(<VerseCard {...props} />);
@@ -74,6 +75,44 @@ describe('VerseCard', () => {
     setup({ state: '110' });
     expect(screen.getAllByRole('button', { pressed: true })).toHaveLength(2);
     expect(screen.getAllByRole('button', { pressed: false })).toHaveLength(1);
+  });
+
+  describe('whole-verse checkbox', () => {
+    it('is unchecked when nothing is done', () => {
+      setup({ state: '000' });
+      expect(screen.getByRole('checkbox', { name: /Mark verse read/u })).toHaveAttribute(
+        'aria-checked',
+        'false',
+      );
+    });
+
+    it('shows a mixed state when only some steps are done', () => {
+      setup({ state: '010' });
+      expect(screen.getByRole('checkbox', { name: /Mark verse read/u })).toHaveAttribute(
+        'aria-checked',
+        'mixed',
+      );
+    });
+
+    it('is checked once every step is done', () => {
+      setup({ state: '111' });
+      expect(screen.getByRole('checkbox', { name: /Mark verse read/u })).toHaveAttribute(
+        'aria-checked',
+        'true',
+      );
+    });
+
+    it('calls onToggleAll on click regardless of current state', async () => {
+      const user = userEvent.setup();
+      const props = setup({ state: '010' });
+      await user.click(screen.getByRole('checkbox', { name: /Mark verse read/u }));
+      expect(props.onToggleAll).toHaveBeenCalledTimes(1);
+    });
+
+    it('names the specific verse, so multiple cards on one page are distinguishable', () => {
+      setup();
+      expect(screen.getByRole('checkbox', { name: 'Mark verse read 1:1' })).toBeInTheDocument();
+    });
   });
 
   it('advances Mikra when the Hebrew is tapped', async () => {

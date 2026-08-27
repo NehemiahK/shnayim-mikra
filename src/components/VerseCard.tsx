@@ -23,6 +23,8 @@ export interface VerseCardProps {
   onToggleStep: (stepId: string) => void;
   onAdvance: (kind: 'mikra' | 'targum') => void;
   onToggleExpand: () => void;
+  /** Marks every step of the verse done in one action, or undoes all of them. */
+  onToggleAll: () => void;
 }
 
 function verseLabel(verse: Verse): string {
@@ -45,6 +47,7 @@ function VerseCardImpl({
   onToggleStep,
   onAdvance,
   onToggleExpand,
+  onToggleAll,
 }: VerseCardProps): React.JSX.Element | null {
   const index = unit.verses[0];
   const verse = index === undefined ? undefined : parsha.verses[index];
@@ -59,6 +62,8 @@ function VerseCardImpl({
 
   const passLabels = [t('firstReading'), t('secondReading'), '3'];
   const allDone = !state.includes('0');
+  const noneDone = !state.includes('1');
+  const wholeVerseState: 'done' | 'partial' | 'empty' = allDone ? 'done' : noneDone ? 'empty' : 'partial';
 
   // When Rashi is the assigned third reading but this verse has none, the
   // fallback substitutes Onkelos so the reading is never left empty — the
@@ -75,9 +80,45 @@ function VerseCardImpl({
       }`}
     >
       <header className="mb-2 flex items-center justify-between gap-2">
-        <span className="rounded-md bg-[var(--color-paper)] px-2 py-0.5 font-mono text-xs text-[var(--color-muted)]">
-          {verseLabel(verse)}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="rounded-md bg-[var(--color-paper)] px-2 py-0.5 font-mono text-xs text-[var(--color-muted)]">
+            {verseLabel(verse)}
+          </span>
+          {/*
+            One tap for the whole verse — the per-step dots below stay for
+            anyone tracking each reading individually, but reaching for three
+            separate targets just to say "I read this" is real friction.
+          */}
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={wholeVerseState === 'done' ? 'true' : wholeVerseState === 'partial' ? 'mixed' : 'false'}
+            aria-label={`${t('markVerseDone')} ${verseLabel(verse)}`}
+            onClick={onToggleAll}
+            className={`relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors after:absolute after:-inset-2 after:content-[''] ${
+              wholeVerseState === 'done'
+                ? 'border-[var(--color-accent)] bg-[var(--color-accent)]'
+                : wholeVerseState === 'partial'
+                  ? 'border-[var(--color-accent)] bg-transparent'
+                  : 'border-[var(--color-line)] bg-transparent'
+            }`}
+          >
+            {wholeVerseState === 'done' && (
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M5 13l4 4L19 7"
+                  stroke="white"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+            {wholeVerseState === 'partial' && (
+              <span className="block h-2 w-2 rounded-full bg-[var(--color-accent)]" />
+            )}
+          </button>
+        </div>
         <button
           type="button"
           onClick={onToggleExpand}

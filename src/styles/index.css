@@ -120,4 +120,14 @@
   .safe-top {
     padding-top: max(0.5rem, env(safe-area-inset-top));
   }
+
+  /* Keyboard-shortcut hint: only where a physical spacebar plausibly exists. */
+  .kbd-hint {
+    display: none;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .kbd-hint {
+      display: block;
+    }
+  }
 }
