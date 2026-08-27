@@ -59,6 +59,8 @@ const en = {
   targumSource: 'Third reading',
   targumHelp: 'Onkelos is the standard practice. The Rema permits Rashi in its place, and some are careful to read both.',
   targumBoth: 'Onkelos and Rashi',
+  /** Short label for the compact quick-switch on the reading page itself. */
+  both: 'Both',
 
   repetitions: 'Hebrew readings',
   repetitionsHelp: 'Two by custom. Change only if you have a reason to.',
@@ -165,6 +167,7 @@ const he: Dict = {
   targumSource: 'הקריאה השלישית',
   targumHelp: 'אונקלוס הוא המנהג הרווח. הרמ״א מתיר רש״י במקומו, ויש המדקדקים לקרוא את שניהם.',
   targumBoth: 'אונקלוס ורש״י',
+  both: 'שניהם',
 
   repetitions: 'מספר קריאות המקרא',
   repetitionsHelp: 'שתיים כמנהג. שנה רק אם יש לך סיבה.',

@@ -223,6 +223,43 @@ test.describe('settings', () => {
   });
 });
 
+test.describe('quick targum switch on the reading page', () => {
+  // github.com/NehemiahK/shnayim-mikra/issues/3 — reachable without a trip to
+  // Settings, since a reader may want to change it mid-parsha.
+  test('is visible immediately, with no navigation to Settings', async ({ page }) => {
+    await page.goto(`/p/${PARSHA}`);
+    const switcher = page.getByRole('radiogroup', { name: 'Third reading' });
+    await expect(switcher).toBeVisible();
+    await expect(switcher.getByRole('radio', { name: 'Onkelos' })).toHaveAttribute('aria-checked', 'true');
+  });
+
+  test('switching it changes the reading immediately, without a reload', async ({ page }) => {
+    await page.goto(`/p/${PARSHA}`);
+    const card = page.locator('article[id^="unit-"]').first();
+    await expect(card.getByRole('button', { name: 'Onkelos 26:1', exact: true })).toBeVisible();
+
+    await page.getByRole('radiogroup', { name: 'Third reading' }).getByRole('radio', { name: 'Rashi' }).click();
+
+    await expect(card.getByRole('button', { name: 'Rashi 1 26:1', exact: true })).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Onkelos 26:1', exact: true })).toHaveCount(0);
+  });
+
+  test('agrees with the Settings page — the same underlying setting, not a separate copy', async ({ page }) => {
+    await page.goto(`/p/${PARSHA}`);
+    await page.getByRole('radiogroup', { name: 'Third reading' }).getByRole('radio', { name: 'Both' }).click();
+
+    await page.goto('/settings');
+    await expect(page.getByRole('radio', { name: 'Onkelos and Rashi' })).toHaveAttribute('aria-checked', 'true');
+
+    // And the reverse direction: a change made in Settings shows up here too.
+    await page.getByRole('radio', { name: 'Onkelos', exact: true }).click();
+    await page.goto(`/p/${PARSHA}`);
+    await expect(
+      page.getByRole('radiogroup', { name: 'Third reading' }).getByRole('radio', { name: 'Onkelos' }),
+    ).toHaveAttribute('aria-checked', 'true');
+  });
+});
+
 test.describe('progress', () => {
   test('survives a reload and is scoped to one parsha', async ({ page }) => {
     await page.goto(`/p/${PARSHA}`);

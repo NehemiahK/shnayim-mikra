@@ -15,6 +15,7 @@ import { VerseCard } from './VerseCard.js';
 import { AliyahBlockCard } from './AliyahBlockCard.js';
 import { AliyahNav } from './AliyahNav.js';
 import { ProgressBar } from './Progress.js';
+import { Choice } from './Field.js';
 
 interface ReadingSessionProps {
   parts: ParshaText[];
@@ -24,6 +25,7 @@ interface ReadingSessionProps {
 export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX.Element {
   const { t, lang } = useT();
   const settings = useSettings((s) => s.settings);
+  const setSetting = useSettings((s) => s.set);
   const done = useProgress((s) => s.done);
   const toggle = useProgress((s) => s.toggle);
   const setDone = useProgress((s) => s.setDone);
@@ -143,13 +145,32 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
   return (
     <div>
       <div className="sticky top-0 z-10 -mx-4 mb-4 border-b border-[var(--color-line)] bg-[var(--color-paper)]/95 px-4 pb-3 pt-2 backdrop-blur">
-        <AliyahNav
-          aliyot={navItems}
-          names={navNames}
-          showSlug={parts.length > 1}
-          onJump={jump}
-          label={`${title} — ${t('aliyot')}`}
+        {/*
+          Reachable here, not only in Settings — switching mid-parsha (e.g. a
+          verse turns out to have no Rashi) shouldn't mean navigating away
+          from the reading. Settings' own copy of this control reads and
+          writes the exact same setting, so the two can never disagree.
+        */}
+        <Choice
+          label={t('targumSource')}
+          full
+          value={settings.targum}
+          onChange={(v) => { setSetting('targum', v); }}
+          options={[
+            { value: 'onkelos', label: t('onkelos') },
+            { value: 'rashi', label: t('rashi') },
+            { value: 'both', label: t('both') },
+          ]}
         />
+        <div className="mt-2">
+          <AliyahNav
+            aliyot={navItems}
+            names={navNames}
+            showSlug={parts.length > 1}
+            onJump={jump}
+            label={`${title} — ${t('aliyot')}`}
+          />
+        </div>
         <div className="mt-2 flex items-center gap-3">
           <ProgressBar fraction={total.fraction} />
           <span className="shrink-0 font-mono text-xs text-[var(--color-muted)]">
