@@ -22,6 +22,7 @@ import {
 } from './sefaria.js';
 import { parseRef, verseKey, formatRange, toSlug, normalizeName } from '../src/lib/refs.js';
 import { parseRuns, stripMarkup } from '../src/lib/hebrew.js';
+import { PARSHA_DATA_VERSION, RASHI_DATA_VERSION } from '../src/lib/data-version.js';
 import type { RichRun } from '../src/lib/schema.js';
 import {
   BOOKS,
@@ -561,11 +562,11 @@ async function main(): Promise<void> {
 
   for (const b of built) {
     await writeFile(
-      join(PUB_PARSHA, `${b.text.slug}.v1.json`),
+      join(PUB_PARSHA, `${b.text.slug}.${PARSHA_DATA_VERSION}.json`),
       JSON.stringify(parshaTextSchema.parse(b.text)),
     );
     await writeFile(
-      join(PUB_RASHI, `${b.rashi.slug}.v1.json`),
+      join(PUB_RASHI, `${b.rashi.slug}.${RASHI_DATA_VERSION}.json`),
       JSON.stringify(rashiTextSchema.parse(b.rashi)),
     );
   }

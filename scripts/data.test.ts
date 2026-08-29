@@ -15,6 +15,7 @@ import {
   type ParshaText,
 } from '../src/lib/schema.js';
 import { parseRef, verseKey } from '../src/lib/refs.js';
+import { PARSHA_DATA_VERSION, RASHI_DATA_VERSION } from '../src/lib/data-version.js';
 
 const ROOT = process.cwd();
 const PARSHA_DIR = join(ROOT, 'public/data/parsha');
@@ -39,11 +40,22 @@ describe('corpus completeness', () => {
     expect(texts.size).toBe(54);
   });
 
+  it('ships files under exactly the version the app asks for', () => {
+    // The filename is the only cache-buster: /data is immutable for a year and
+    // CacheFirst in the service worker. If the writer and the reader disagree
+    // about the version, every existing install keeps a stale, differently
+    // shaped payload — which is how adding `oe` crashed the reader.
+    for (const meta of index.parshiyot) {
+      expect(parshaFiles).toContain(`${meta.slug}.${PARSHA_DATA_VERSION}.json`);
+    }
+    expect(parshaFiles.every((f) => f.endsWith(`.${PARSHA_DATA_VERSION}.json`))).toBe(true);
+  });
+
   it('has a Rashi file for every parsha', () => {
     const rashiFiles = readdirSync(RASHI_DIR).filter((f) => f.endsWith('.json'));
     expect(rashiFiles).toHaveLength(54);
     for (const meta of index.parshiyot) {
-      expect(rashiFiles).toContain(`${meta.slug}.v1.json`);
+      expect(rashiFiles).toContain(`${meta.slug}.${RASHI_DATA_VERSION}.json`);
     }
   });
 
@@ -138,7 +150,7 @@ describe('books are fully covered', () => {
 
 describe('rashi', () => {
   it.each([...texts.keys()])('%s comments all land on real verses', (slug) => {
-    const rashi = rashiTextSchema.parse(readJson(join(RASHI_DIR, `${slug}.v1.json`)));
+    const rashi = rashiTextSchema.parse(readJson(join(RASHI_DIR, `${slug}.${RASHI_DATA_VERSION}.json`)));
     const parsha = texts.get(slug);
     if (!parsha) throw new Error('missing parsha');
     const valid = new Set(parsha.verses.map((v) => verseKey(v.c, v.v)));
@@ -155,7 +167,7 @@ describe('rashi', () => {
     let withRashi = 0;
     let totalVerses = 0;
     for (const [slug, parsha] of texts) {
-      const rashi = rashiTextSchema.parse(readJson(join(RASHI_DIR, `${slug}.v1.json`)));
+      const rashi = rashiTextSchema.parse(readJson(join(RASHI_DIR, `${slug}.${RASHI_DATA_VERSION}.json`)));
       withRashi += Object.keys(rashi.comments).length;
       totalVerses += parsha.verses.length;
     }

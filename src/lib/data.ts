@@ -1,4 +1,5 @@
 import type { ParshaText, RashiText } from './types.js';
+import { PARSHA_DATA_VERSION, RASHI_DATA_VERSION } from './data-version.js';
 
 /**
  * Text is a static, versioned asset served from our own origin and validated
@@ -17,6 +18,14 @@ function assertParshaText(value: unknown, slug: string): ParshaText {
     v.aliyot.length === 0
   ) {
     throw new Error(`Malformed parsha data for "${slug}"`);
+  }
+
+  // Backfill optional per-verse texts. The version suffix should already stop
+  // a stale payload reaching us, but a single missing field must never be able
+  // to take the whole reading down — losing one translation is recoverable,
+  // a blank screen is not.
+  for (const verse of v.verses) {
+    if (!Array.isArray(verse.oe)) verse.oe = [];
   }
   return v as ParshaText;
 }
@@ -39,11 +48,11 @@ async function getJson(url: string): Promise<unknown> {
 }
 
 export function parshaUrl(slug: string): string {
-  return `${import.meta.env.BASE_URL}data/parsha/${slug}.v1.json`;
+  return `${import.meta.env.BASE_URL}data/parsha/${slug}.${PARSHA_DATA_VERSION}.json`;
 }
 
 export function rashiUrl(slug: string): string {
-  return `${import.meta.env.BASE_URL}data/rashi/${slug}.v1.json`;
+  return `${import.meta.env.BASE_URL}data/rashi/${slug}.${RASHI_DATA_VERSION}.json`;
 }
 
 export function loadParsha(slug: string): Promise<ParshaText> {
