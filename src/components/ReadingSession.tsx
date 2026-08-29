@@ -260,6 +260,7 @@ export function ReadingSession({
                 hebrewStyle={settings.hebrewStyle}
                 showTranslation={settings.showTranslation}
                 rashiEnglish={settings.rashiEnglish}
+                onkelosEnglish={settings.onkelosEnglish}
                 rashiFallbackToOnkelos={rashiFallbackActive}
                 done={state === '1'}
                 rashi={rashi[unit.slug]}
@@ -281,6 +282,7 @@ export function ReadingSession({
               hebrewStyle={settings.hebrewStyle}
               showTranslation={settings.showTranslation}
               rashiEnglish={settings.rashiEnglish}
+              onkelosEnglish={settings.onkelosEnglish}
               rashiFallbackToOnkelos={rashiFallbackActive}
               parallel={settings.parallel}
               state={state}

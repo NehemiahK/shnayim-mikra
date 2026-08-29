@@ -26,12 +26,18 @@ export * from './types.js';
 
 export const bookSchema = z.enum(BOOKS);
 
+export const richRunSchema = z.object({
+  t: z.string(),
+  b: z.literal(true).optional(),
+});
+
 export const verseSchema = z.object({
   c: z.number().int().positive(),
   v: z.number().int().positive(),
   he: z.string().min(1),
   on: z.string(),
   en: z.string(),
+  oe: z.array(richRunSchema),
 });
 
 export const aliyahSchema = z.object({
@@ -49,11 +55,6 @@ export const parshaTextSchema = z.object({
   nameHe: z.string().min(1),
   aliyot: z.array(aliyahSchema).min(1),
   verses: z.array(verseSchema).min(1),
-});
-
-export const richRunSchema = z.object({
-  t: z.string(),
-  b: z.literal(true).optional(),
 });
 
 export const rashiCommentSchema = z.object({

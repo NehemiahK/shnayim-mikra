@@ -42,10 +42,10 @@ export function stripMarkup(html: string): string {
     .trim();
 }
 
-export interface RichRun {
-  t: string;
-  b?: true;
-}
+// RichRun lives in types.ts so there is exactly one definition of it; this
+// module only produces and consumes them.
+export type { RichRun } from './types.js';
+import type { RichRun } from './types.js';
 
 const ENTITIES: Record<string, string> = {
   '&nbsp;': ' ',

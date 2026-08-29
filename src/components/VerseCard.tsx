@@ -4,6 +4,8 @@ import type { ReadingUnit } from '../lib/reading-units.js';
 import { renderHebrew, type HebrewStyle } from '../lib/hebrew.js';
 import { StepDots } from './StepDots.js';
 import { RashiComments } from './RashiComments.js';
+import { EnglishDisclosure } from './EnglishDisclosure.js';
+import { RichText } from './RichText.js';
 import type { TranslationKey } from '../i18n.js';
 
 export interface VerseCardProps {
@@ -12,6 +14,7 @@ export interface VerseCardProps {
   hebrewStyle: HebrewStyle;
   showTranslation: boolean;
   rashiEnglish: boolean;
+  onkelosEnglish: boolean;
   rashiFallbackToOnkelos: boolean;
   parallel: boolean;
   /** `1` for each completed step of the unit, `0` otherwise — memo key. */
@@ -37,6 +40,7 @@ function VerseCardImpl({
   hebrewStyle,
   showTranslation,
   rashiEnglish,
+  onkelosEnglish,
   rashiFallbackToOnkelos,
   parallel,
   state,
@@ -175,14 +179,21 @@ function VerseCardImpl({
                   passage mean two different things. There, the dot is the control.
                 */}
                 {step.kind === 'onkelos' ? (
-                  <button
-                    type="button"
-                    onClick={() => { onToggleStep(step.id); }}
-                    className="w-full cursor-pointer text-start"
-                    aria-label={`${t('onkelos')} ${verseLabel(verse)}`}
-                  >
-                    <p className="hebrew-sm text-[var(--color-ink)]/90">{verse.on}</p>
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => { onToggleStep(step.id); }}
+                      className="w-full cursor-pointer text-start"
+                      aria-label={`${t('onkelos')} ${verseLabel(verse)}`}
+                    >
+                      <p className="hebrew-sm text-[var(--color-ink)]/90">{verse.on}</p>
+                    </button>
+                    {verse.oe.length > 0 && (
+                      <EnglishDisclosure defaultOpen={onkelosEnglish} t={t}>
+                        <RichText runs={verse.oe} className="english text-[var(--color-muted)]" />
+                      </EnglishDisclosure>
+                    )}
+                  </>
                 ) : (
                   <RashiComments
                     comments={rashi}
@@ -234,6 +245,11 @@ function VerseCardImpl({
                 {t('onkelos')}
               </h3>
               <p className="hebrew-sm">{verse.on}</p>
+              {verse.oe.length > 0 && (
+                <EnglishDisclosure defaultOpen={onkelosEnglish} t={t}>
+                  <RichText runs={verse.oe} className="english text-[var(--color-muted)]" />
+                </EnglishDisclosure>
+              )}
             </div>
           )}
           {!targumSteps.some((s) => s.kind === 'rashi') && (

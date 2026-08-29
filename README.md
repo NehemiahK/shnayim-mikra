@@ -25,6 +25,7 @@ The whole app is 78 KB of JavaScript, gzipped.
 | Torah (Hebrew) | Tanach with Ta'amei Hamikra | Public Domain |
 | Torah (English) | Metsudah Chumash, Metsudah Publications, 2009 | CC-BY |
 | Targum Onkelos | Onkelos, vocalized | Public Domain |
+| Targum Onkelos (English) | Metsudah Chumash 2009 [with Onkelos translation] | **CC-BY-NC** |
 | Rashi (Hebrew + English) | Rashi Chumash, Metsudah Publications, 2009 | CC-BY |
 
 Hebrew Torah and Onkelos stay on public-domain editions deliberately — there is
@@ -38,6 +39,17 @@ editions bundled "[with Onkelos translation]" are **CC-BY-NC** instead and are
 deliberately avoided: a noncommercial restriction would permanently rule out
 a donation button or paid tier without renegotiating, for a project that
 otherwise has no reason to accept that limit.
+
+**The Targum's English is the one non-commercial text here**, and the only
+edition covering all five books — the CC0 alternative exists for just two. It
+earns its place because it is not simply the Torah translation again: it bolds
+where Onkelos *departs* from the literal Hebrew ("darkness [was spread] over
+the surface"), which is exactly what makes the Aramaic legible to someone
+reading it. Those bold runs are preserved as structured data rather than
+flattened, since they are the entire point. The tradeoff is real though:
+including it means the bundled texts, taken together, can no longer be used
+commercially. Dropping this one edition would return the whole corpus to
+public-domain/CC-BY.
 
 The pipeline **discovers** editions by preference rather than hardcoding
 titles — Sefaria titles the same edition differently between books, and a

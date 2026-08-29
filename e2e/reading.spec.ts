@@ -400,6 +400,46 @@ test.describe('Rashi and translation', () => {
   });
 });
 
+test.describe('Targum in English', () => {
+  test('sits behind a disclosure under the Aramaic, closed by default', async ({ page }) => {
+    await page.goto(`/p/${PARSHA}`);
+    const card = page.locator('#unit-ki-tavo\\:26\\:1');
+    const toggle = card.getByRole('button', { name: 'English' });
+
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(card).not.toContainText('When it happens that you come to the land');
+
+    await toggle.click();
+    await expect(card).toContainText('When it happens that you come to the land');
+  });
+
+  test('marks where Onkelos departs from the literal Hebrew', async ({ page }) => {
+    await setSettings(page, { onkelosEnglish: true });
+    await page.goto(`/p/${PARSHA}`);
+
+    // 26:3 renders "to [before] Adonoy" — Onkelos avoiding the direct phrasing.
+    const card = page.locator('#unit-ki-tavo\\:26\\:3');
+    await card.scrollIntoViewIfNeeded();
+    await expect(card.locator('strong').first()).toHaveText(/before/u);
+  });
+
+  test('can start open from Settings', async ({ page }) => {
+    await setSettings(page, { onkelosEnglish: true });
+    await page.goto(`/p/${PARSHA}`);
+    await expect(
+      page.locator('#unit-ki-tavo\\:26\\:1').getByRole('button', { name: 'English' }),
+    ).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  test('does not nest its control inside the tap-to-mark target', async ({ page }) => {
+    await page.goto(`/p/${PARSHA}`);
+    const nested = await page
+      .locator('#unit-ki-tavo\\:26\\:1 button button')
+      .count();
+    expect(nested).toBe(0);
+  });
+});
+
 test.describe('settings', () => {
   test('Rashi can replace Onkelos as the third reading', async ({ page }) => {
     await setSettings(page, { targum: 'rashi' });

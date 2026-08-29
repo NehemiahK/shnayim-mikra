@@ -3,6 +3,8 @@ import type { ParshaText, RashiText } from '../lib/types.js';
 import type { ReadingUnit } from '../lib/reading-units.js';
 import { renderHebrew, type HebrewStyle } from '../lib/hebrew.js';
 import { RashiComments } from './RashiComments.js';
+import { EnglishDisclosure } from './EnglishDisclosure.js';
+import { RichText } from './RichText.js';
 import type { TranslationKey } from '../i18n.js';
 
 export interface AliyahBlockCardProps {
@@ -11,6 +13,7 @@ export interface AliyahBlockCardProps {
   hebrewStyle: HebrewStyle;
   showTranslation: boolean;
   rashiEnglish: boolean;
+  onkelosEnglish: boolean;
   rashiFallbackToOnkelos: boolean;
   done: boolean;
   rashi: RashiText | undefined;
@@ -26,6 +29,7 @@ function AliyahBlockCardImpl({
   hebrewStyle,
   showTranslation,
   rashiEnglish,
+  onkelosEnglish,
   rashiFallbackToOnkelos,
   done,
   rashi,
@@ -82,7 +86,16 @@ function AliyahBlockCardImpl({
               </span>
               <div className="min-w-0 flex-1">
                 {kind === 'mikra' && <p className="hebrew">{renderHebrew(verse.he, hebrewStyle)}</p>}
-                {kind === 'onkelos' && <p className="hebrew-sm">{verse.on}</p>}
+                {kind === 'onkelos' && (
+                  <>
+                    <p className="hebrew-sm">{verse.on}</p>
+                    {verse.oe.length > 0 && (
+                      <EnglishDisclosure defaultOpen={onkelosEnglish} t={t}>
+                        <RichText runs={verse.oe} className="english text-[var(--color-muted)]" />
+                      </EnglishDisclosure>
+                    )}
+                  </>
+                )}
                 {kind === 'rashi' && (
                   <RashiComments
                     comments={rashi?.comments[key]}

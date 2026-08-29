@@ -22,7 +22,7 @@ function fixture(slug = 'test'): ParshaText {
       { n: 1, from: 0, to: 2, startRef: '1:1', endRef: '1:3' },
       { n: 2, from: 3, to: 4, startRef: '1:4', endRef: '1:5' },
     ],
-    verses: [1, 2, 3, 4, 5].map((v) => ({ c: 1, v, he: `he${String(v)}`, on: `on${String(v)}`, en: `en${String(v)}` })),
+    verses: [1, 2, 3, 4, 5].map((v) => ({ c: 1, v, he: `he${String(v)}`, on: `on${String(v)}`, en: `en${String(v)}`, oe: [] })),
   };
 }
 

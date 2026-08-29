@@ -131,6 +131,13 @@ export function Settings(): React.JSX.Element {
             onChange={(v) => { set('showTranslation', v); }}
           />
         </Row>
+        <Row label={t('onkelosEnglish')} help={t('onkelosEnglishHelp')}>
+          <Toggle
+            label={t('onkelosEnglish')}
+            checked={settings.onkelosEnglish}
+            onChange={(v) => { set('onkelosEnglish', v); }}
+          />
+        </Row>
         <Row label={t('rashiEnglish')} help={t('rashiEnglishHelp')}>
           <Toggle
             label={t('rashiEnglish')}

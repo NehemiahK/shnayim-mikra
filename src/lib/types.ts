@@ -18,7 +18,18 @@ export const HEBREW_BOOK_NAMES: Readonly<Record<Book, string>> = {
   Deuteronomy: 'דְּבָרִים',
 };
 
-/** One verse, carrying every text we ship. All fields are plain text. */
+/**
+ * A run of styled text. `b` marks emphasis that carries meaning: Rashi's dibur
+ * hamatchil, or a place where Onkelos departs from the literal Hebrew.
+ */
+export interface RichRun {
+  t: string;
+  /** Explicitly `| undefined` so the Zod-inferred shape stays assignable
+   *  under exactOptionalPropertyTypes. */
+  b?: true | undefined;
+}
+
+/** One verse, carrying every text we ship. */
 export interface Verse {
   /** Chapter number within the book. */
   c: number;
@@ -28,8 +39,15 @@ export interface Verse {
   he: string;
   /** Targum Onkelos, vocalized. */
   on: string;
-  /** English translation (JPS 1917). */
+  /** English translation. */
   en: string;
+  /**
+   * English rendering of the Targum. This is the same base translation as
+   * `en`, with bold runs marking where Onkelos departs from the literal
+   * Hebrew — which is the entire reason to show it, so the runs must be kept
+   * rather than flattened to plain text. Empty where no edition covers it.
+   */
+  oe: RichRun[];
 }
 
 /** An aliyah, addressed as an inclusive index range into the parsha's verses. */
@@ -48,15 +66,6 @@ export interface ParshaText {
   nameHe: string;
   aliyot: Aliyah[];
   verses: Verse[];
-}
-
-/**
- * A run of Rashi text. `b` marks the dibur hamatchil — the quoted lead phrase
- * that tells you which words the comment is on.
- */
-export interface RichRun {
-  t: string;
-  b?: true;
 }
 
 export interface RashiComment {

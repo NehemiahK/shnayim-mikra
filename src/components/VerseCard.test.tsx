@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { VerseCard, type VerseCardProps } from './VerseCard.js';
 import { buildReadingUnits, type TargumSource } from '../lib/reading-units.js';
@@ -19,6 +19,7 @@ const parsha: ParshaText = {
       he: 'בְּרֵאשִׁית֖ בָּרָ֣א',
       on: 'בְּקַדְמִין בְּרָא',
       en: 'In the beginning God created',
+      oe: [{ t: 'In the beginning' }, { t: 'created', b: true }],
     },
   ],
 };
@@ -41,6 +42,7 @@ function setup(over: Partial<VerseCardProps> = {}, targum: TargumSource = 'onkel
     hebrewStyle: 'taamim',
     showTranslation: false,
     rashiEnglish: false,
+    onkelosEnglish: false,
     rashiFallbackToOnkelos: false,
     parallel: false,
     state: '0'.repeat(unit.steps.length),
@@ -115,6 +117,45 @@ describe('VerseCard', () => {
     });
   });
 
+  describe('Targum in English', () => {
+    it('keeps it behind a disclosure rather than under the Aramaic', () => {
+      setup();
+      expect(screen.getByRole('button', { name: 'English' })).toHaveAttribute(
+        'aria-expanded',
+        'false',
+      );
+      expect(screen.queryByText(/In the beginning/u)).not.toBeInTheDocument();
+    });
+
+    it('opens on demand', async () => {
+      const user = userEvent.setup();
+      setup();
+      await user.click(screen.getByRole('button', { name: 'English' }));
+      expect(screen.getByText(/In the beginning/u)).toBeInTheDocument();
+    });
+
+    it('starts open when the setting asks for it', () => {
+      setup({ onkelosEnglish: true });
+      expect(screen.getByRole('button', { name: 'English' })).toHaveAttribute(
+        'aria-expanded',
+        'true',
+      );
+    });
+
+    it('marks where Onkelos departs from the literal Hebrew', () => {
+      setup({ onkelosEnglish: true });
+      // The bold runs are the whole point of shipping this edition.
+      expect(screen.getByText('created', { selector: 'strong' })).toBeInTheDocument();
+    });
+
+    it('does not nest the disclosure inside the tap-to-mark target', () => {
+      setup();
+      for (const button of screen.getAllByRole('button')) {
+        expect(button.querySelector('button')).toBeNull();
+      }
+    });
+  });
+
   it('advances Mikra when the Hebrew is tapped', async () => {
     const user = userEvent.setup();
     const props = setup();
@@ -159,7 +200,10 @@ describe('VerseCard', () => {
     const user = userEvent.setup();
     setup({ expanded: true, rashi });
 
-    const toggle = screen.getByRole('button', { name: 'English' });
+    // Both the Targum and Rashi now carry an "English" disclosure, so scope
+    // to the Rashi section of the expanded panel.
+    const rashiSection = screen.getByRole('heading', { name: 'Rashi' }).parentElement!;
+    const toggle = within(rashiSection).getByRole('button', { name: 'English' });
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
 
     await user.click(toggle);
@@ -174,7 +218,11 @@ describe('VerseCard', () => {
   it('starts Rashi\'s English open when the setting asks for it', () => {
     setup({ expanded: true, rashi, rashiEnglish: true });
     expect(screen.getByText(/Rabbi Isaac said/u)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'English' })).toHaveAttribute('aria-expanded', 'true');
+    const rashiSection = screen.getByRole('heading', { name: 'Rashi' }).parentElement!;
+    expect(within(rashiSection).getByRole('button', { name: 'English' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
   });
 
   it('marks the dibur hamatchil so Rashi stays navigable', () => {
@@ -241,7 +289,8 @@ describe('VerseCard', () => {
   it('exposes expansion state to assistive technology', async () => {
     const user = userEvent.setup();
     const props = setup();
-    const toggle = screen.getByRole('button', { expanded: false });
+    const toggle = screen.getByRole('button', { name: /Show Rashi and translation/u });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await user.click(toggle);
     expect(props.onToggleExpand).toHaveBeenCalled();
   });

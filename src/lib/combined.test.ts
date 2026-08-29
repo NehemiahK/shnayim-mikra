@@ -10,6 +10,7 @@ function verses(chapter: number, from: number, to: number): Verse[] {
     he: `he${String(from + i)}`,
     on: `on${String(from + i)}`,
     en: `en${String(from + i)}`,
+    oe: [],
   }));
 }
 

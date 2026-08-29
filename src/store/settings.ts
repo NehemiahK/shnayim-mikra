@@ -24,6 +24,8 @@ export interface Settings {
   showTranslation: boolean;
   /** Whether Rashi's English starts expanded. The accordion is always there. */
   rashiEnglish: boolean;
+  /** Whether the Targum's English starts expanded. */
+  onkelosEnglish: boolean;
   parallel: boolean;
   theme: Theme;
   // Who is reading
@@ -41,6 +43,7 @@ export const DEFAULT_SETTINGS: Settings = {
   fontScale: 1,
   showTranslation: false,
   rashiEnglish: false,
+  onkelosEnglish: false,
   parallel: false,
   theme: 'system',
   region: 'diaspora',
@@ -70,6 +73,7 @@ function coerce(raw: unknown): Settings {
     fontScale: Math.min(FONT_SCALE_RANGE.max, Math.max(FONT_SCALE_RANGE.min, scale)),
     showTranslation: typeof v.showTranslation === 'boolean' ? v.showTranslation : false,
     rashiEnglish: typeof v.rashiEnglish === 'boolean' ? v.rashiEnglish : false,
+    onkelosEnglish: typeof v.onkelosEnglish === 'boolean' ? v.onkelosEnglish : false,
     parallel: typeof v.parallel === 'boolean' ? v.parallel : false,
     theme: pick('theme', ['light', 'dark', 'system']),
     region: pick('region', ['diaspora', 'israel']),

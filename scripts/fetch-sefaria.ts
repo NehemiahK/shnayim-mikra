@@ -84,6 +84,14 @@ const PREFS = {
     // English is, so there is nothing to gain by accepting that restriction.
     match: [startsWith('Onkelos'), includes('Yemenite Taj')],
   },
+  onkelosEn: {
+    language: 'en',
+    label: 'Targum Onkelos English',
+    // The only edition covering all five books. Its value over the plain
+    // Torah translation is that it bolds where Onkelos departs from the
+    // literal Hebrew, so those runs must survive into the data.
+    match: [includes('[with Onkelos translation]'), includes('Metsudah'), includes('Sefaria')],
+  },
   rashiHe: {
     language: 'he',
     label: 'Rashi Hebrew',
@@ -156,8 +164,19 @@ interface BookCorpus {
   he: Chapters;
   en: Chapters;
   onkelos: Chapters;
+  /** Onkelos in English, kept as runs so its departure markers survive. */
+  onkelosEn: RichRun[][][];
   rashiHe: CommentaryChapters;
   rashiEn: CommentaryChapters;
+}
+
+/** Like asChapters, but keeping the bold runs rather than flattening them. */
+function asRunChapters(raw: unknown, label: string): RichRun[][][] {
+  if (!Array.isArray(raw)) throw new Error(`${label}: expected an array of chapters`);
+  return raw.map((chapter) => {
+    if (!Array.isArray(chapter)) return [];
+    return chapter.map((verse) => (typeof verse === 'string' ? parseRuns(verse) : []));
+  });
 }
 
 async function fetchBook(book: Book): Promise<BookCorpus> {
@@ -176,6 +195,10 @@ async function fetchBook(book: Book): Promise<BookCorpus> {
     he: record('Torah (Hebrew)', resolveEdition(torahVersions, PREFS.torahHe, torahRef)),
     en: record('Torah (English)', resolveEdition(torahVersions, PREFS.torahEn, torahRef)),
     onkelos: record('Targum Onkelos', resolveEdition(onkelosVersions, PREFS.onkelos, onkelosRef)),
+    onkelosEn: record(
+      'Targum Onkelos (English)',
+      resolveEdition(onkelosVersions, PREFS.onkelosEn, onkelosRef),
+    ),
     rashiHe: record('Rashi (Hebrew)', resolveEdition(rashiVersions, PREFS.rashiHe, rashiRef)),
     rashiEn: record('Rashi (English)', resolveEdition(rashiVersions, PREFS.rashiEn, rashiRef)),
   };
@@ -183,10 +206,11 @@ async function fetchBook(book: Book): Promise<BookCorpus> {
     console.log(`    ${role.padEnd(8)} ${ed.versionTitle} [${ed.license}]`);
   }
 
-  const [he, en, onkelos, rashiHe, rashiEn] = await Promise.all([
+  const [he, en, onkelos, onkelosEn, rashiHe, rashiEn] = await Promise.all([
     fetchText(torahRef, editions.he),
     fetchText(torahRef, editions.en),
     fetchText(onkelosRef, editions.onkelos),
+    fetchText(onkelosRef, editions.onkelosEn),
     fetchText(rashiRef, editions.rashiHe),
     fetchText(rashiRef, editions.rashiEn),
   ]);
@@ -195,6 +219,7 @@ async function fetchBook(book: Book): Promise<BookCorpus> {
     he: asChapters(he, `${book} he`),
     en: asChapters(en, `${book} en`),
     onkelos: asChapters(onkelos, onkelosRef),
+    onkelosEn: asRunChapters(onkelosEn, `${onkelosRef} en`),
     rashiHe: asCommentaryChapters(rashiHe, `${rashiRef} he`),
     rashiEn: asCommentaryChapters(rashiEn, `${rashiRef} en`),
   };
@@ -231,7 +256,14 @@ function buildParsha(book: Book, entry: ParashaEntry, corpus: BookCorpus): Built
     const he = at(corpus.he, c, v);
     if (!he) throw new Error(`${slug}: missing Hebrew at ${verseKey(c, v)}`);
     indexByKey.set(verseKey(c, v), verses.length);
-    verses.push({ c, v, he, on: at(corpus.onkelos, c, v), en: at(corpus.en, c, v) });
+    verses.push({
+      c,
+      v,
+      he,
+      on: at(corpus.onkelos, c, v),
+      en: at(corpus.en, c, v),
+      oe: corpus.onkelosEn[c - 1]?.[v - 1] ?? [],
+    });
   }
 
   const aliyot: Aliyah[] = entry.aliyotRefs.map((ref, i) => {
@@ -294,6 +326,10 @@ function validateParsha(built: BuiltParsha): string[] {
   if (missingOnkelos > 0) problems.push(`${slug}: ${String(missingOnkelos)} verses missing Onkelos`);
   const missingEnglish = verses.filter((v) => v.en === '').length;
   if (missingEnglish > 0) problems.push(`${slug}: ${String(missingEnglish)} verses missing English`);
+  const missingOnkelosEn = verses.filter((v) => v.oe.length === 0).length;
+  if (missingOnkelosEn > 0) {
+    problems.push(`${slug}: ${String(missingOnkelosEn)} verses missing Onkelos English`);
+  }
 
   // Aliyot must tile the parsha exactly: start at 0, end at the last verse, no gaps or overlaps.
   const sorted = [...aliyot].sort((a, b) => a.from - b.from);
