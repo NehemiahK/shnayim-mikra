@@ -179,6 +179,59 @@ describe('combined parshiyot', () => {
     );
   });
 
+  it('carries the seven aliyot the combined week is actually read with', () => {
+    for (const combo of index.combos) {
+      expect(combo.aliyot, combo.slug).toHaveLength(7);
+      expect(combo.aliyot.map((a) => a.n)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    }
+  });
+
+  it('has combined aliyot that tile the pair with no gap or overlap', () => {
+    for (const combo of index.combos) {
+      const [aSlug, bSlug] = combo.parts;
+      const verses = [...(texts.get(aSlug)?.verses ?? []), ...(texts.get(bSlug)?.verses ?? [])];
+      const order = new Map(verses.map((v, i) => [verseKey(v.c, v.v), i]));
+
+      let expectedStart = 0;
+      for (const aliyah of combo.aliyot) {
+        const from = order.get(aliyah.startRef);
+        const to = order.get(aliyah.endRef);
+        expect(from, `${combo.slug} aliyah ${String(aliyah.n)} start`).toBe(expectedStart);
+        expect(to, `${combo.slug} aliyah ${String(aliyah.n)} end`).toBeDefined();
+        expect(to).toBeGreaterThanOrEqual(from ?? 0);
+        expectedStart = (to ?? 0) + 1;
+      }
+      // The last aliyah must land exactly on the final verse of the pair.
+      expect(expectedStart, combo.slug).toBe(verses.length);
+    }
+  });
+
+  it('joins the two halves with an aliyah that spans the boundary', () => {
+    // This is what makes combined divisions genuinely different from reading
+    // each parsha's own seven back to back, and why they cannot be derived by
+    // concatenation: one aliyah always straddles the seam. In every pair it is
+    // the fourth, sitting at the middle of the seven.
+    const toKey = (ref: string): [number, number] => {
+      const [c, v] = ref.split(':').map(Number);
+      return [c ?? 0, v ?? 0];
+    };
+    const before = (a: [number, number], b: [number, number]): boolean =>
+      a[0] < b[0] || (a[0] === b[0] && a[1] < b[1]);
+
+    for (const combo of index.combos) {
+      const firstHalf = texts.get(combo.parts[0]);
+      const seam = firstHalf?.verses[firstHalf.verses.length - 1];
+      expect(seam, combo.slug).toBeDefined();
+      const seamKey: [number, number] = [seam?.c ?? 0, seam?.v ?? 0];
+
+      const spanning = combo.aliyot.filter(
+        (a) =>
+          !before(seamKey, toKey(a.startRef)) && before(seamKey, toKey(a.endRef)),
+      );
+      expect(spanning.map((a) => a.n), `${combo.slug} spanning aliyah`).toEqual([4]);
+    }
+  });
+
   it('points at real, consecutive parshiyot', () => {
     for (const combo of index.combos) {
       const [a, b] = combo.parts;

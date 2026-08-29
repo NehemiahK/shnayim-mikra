@@ -72,6 +72,18 @@ export function Settings(): React.JSX.Element {
             />
           </Row>
         )}
+        <Row stacked label={t('doubleParsha')} help={t('doubleParshaHelp')}>
+          <Choice
+            label={t('doubleParsha')}
+            full
+            value={settings.doubleParsha}
+            onChange={(v) => { set('doubleParsha', v); }}
+            options={[
+              { value: 'combined', label: t('doubleParshaCombined') },
+              { value: 'separate', label: t('doubleParshaSeparate') },
+            ]}
+          />
+        </Row>
         <Row label={t('repetitions')} help={t('repetitionsHelp')}>
           <Choice
             label={t('repetitions')}

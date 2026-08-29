@@ -85,7 +85,13 @@ export function Reader({ slug }: { slug: string }): React.JSX.Element {
         </div>
       )}
 
-      {state.status === 'ready' && <ReadingSession parts={state.parts} title={resolved.nameEn} />}
+      {state.status === 'ready' && (
+        <ReadingSession
+          parts={state.parts}
+          title={resolved.nameEn}
+          comboAliyot={resolved.comboAliyot}
+        />
+      )}
     </Page>
   );
 }

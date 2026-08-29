@@ -549,7 +549,44 @@
         "kedoshim"
       ],
       "nameEn": "Achrei Mot-Kedoshim",
-      "nameHe": "אחרי מות־קדושים"
+      "nameHe": "אחרי מות־קדושים",
+      "aliyot": [
+        {
+          "n": 1,
+          "startRef": "16:1",
+          "endRef": "16:24"
+        },
+        {
+          "n": 2,
+          "startRef": "16:25",
+          "endRef": "17:7"
+        },
+        {
+          "n": 3,
+          "startRef": "17:8",
+          "endRef": "18:21"
+        },
+        {
+          "n": 4,
+          "startRef": "18:22",
+          "endRef": "19:14"
+        },
+        {
+          "n": 5,
+          "startRef": "19:15",
+          "endRef": "19:32"
+        },
+        {
+          "n": 6,
+          "startRef": "19:33",
+          "endRef": "20:7"
+        },
+        {
+          "n": 7,
+          "startRef": "20:8",
+          "endRef": "20:27"
+        }
+      ]
     },
     {
       "slug": "behar-bechukotai",
@@ -558,7 +595,44 @@
         "bechukotai"
       ],
       "nameEn": "Behar-Bechukotai",
-      "nameHe": "בהר־בחוקתי"
+      "nameHe": "בהר־בחוקתי",
+      "aliyot": [
+        {
+          "n": 1,
+          "startRef": "25:1",
+          "endRef": "25:18"
+        },
+        {
+          "n": 2,
+          "startRef": "25:19",
+          "endRef": "25:28"
+        },
+        {
+          "n": 3,
+          "startRef": "25:29",
+          "endRef": "25:38"
+        },
+        {
+          "n": 4,
+          "startRef": "25:39",
+          "endRef": "26:9"
+        },
+        {
+          "n": 5,
+          "startRef": "26:10",
+          "endRef": "26:46"
+        },
+        {
+          "n": 6,
+          "startRef": "27:1",
+          "endRef": "27:15"
+        },
+        {
+          "n": 7,
+          "startRef": "27:16",
+          "endRef": "27:34"
+        }
+      ]
     },
     {
       "slug": "chukat-balak",
@@ -567,7 +641,44 @@
         "balak"
       ],
       "nameEn": "Chukat-Balak",
-      "nameHe": "חקת־בלק"
+      "nameHe": "חקת־בלק",
+      "aliyot": [
+        {
+          "n": 1,
+          "startRef": "19:1",
+          "endRef": "20:6"
+        },
+        {
+          "n": 2,
+          "startRef": "20:7",
+          "endRef": "20:21"
+        },
+        {
+          "n": 3,
+          "startRef": "20:22",
+          "endRef": "21:20"
+        },
+        {
+          "n": 4,
+          "startRef": "21:21",
+          "endRef": "22:12"
+        },
+        {
+          "n": 5,
+          "startRef": "22:13",
+          "endRef": "22:38"
+        },
+        {
+          "n": 6,
+          "startRef": "22:39",
+          "endRef": "23:26"
+        },
+        {
+          "n": 7,
+          "startRef": "23:27",
+          "endRef": "25:9"
+        }
+      ]
     },
     {
       "slug": "matot-masei",
@@ -576,7 +687,44 @@
         "masei"
       ],
       "nameEn": "Matot-Masei",
-      "nameHe": "מטות־מסעי"
+      "nameHe": "מטות־מסעי",
+      "aliyot": [
+        {
+          "n": 1,
+          "startRef": "30:2",
+          "endRef": "31:12"
+        },
+        {
+          "n": 2,
+          "startRef": "31:13",
+          "endRef": "31:54"
+        },
+        {
+          "n": 3,
+          "startRef": "32:1",
+          "endRef": "32:19"
+        },
+        {
+          "n": 4,
+          "startRef": "32:20",
+          "endRef": "33:49"
+        },
+        {
+          "n": 5,
+          "startRef": "33:50",
+          "endRef": "34:15"
+        },
+        {
+          "n": 6,
+          "startRef": "34:16",
+          "endRef": "35:8"
+        },
+        {
+          "n": 7,
+          "startRef": "35:9",
+          "endRef": "36:13"
+        }
+      ]
     },
     {
       "slug": "nitzavim-vayeilech",
@@ -585,7 +733,44 @@
         "vayeilech"
       ],
       "nameEn": "Nitzavim-Vayeilech",
-      "nameHe": "נצבים־וילך"
+      "nameHe": "נצבים־וילך",
+      "aliyot": [
+        {
+          "n": 1,
+          "startRef": "29:9",
+          "endRef": "29:28"
+        },
+        {
+          "n": 2,
+          "startRef": "30:1",
+          "endRef": "30:6"
+        },
+        {
+          "n": 3,
+          "startRef": "30:7",
+          "endRef": "30:14"
+        },
+        {
+          "n": 4,
+          "startRef": "30:15",
+          "endRef": "31:6"
+        },
+        {
+          "n": 5,
+          "startRef": "31:7",
+          "endRef": "31:13"
+        },
+        {
+          "n": 6,
+          "startRef": "31:14",
+          "endRef": "31:19"
+        },
+        {
+          "n": 7,
+          "startRef": "31:20",
+          "endRef": "31:30"
+        }
+      ]
     },
     {
       "slug": "tazria-metzora",
@@ -594,7 +779,44 @@
         "metzora"
       ],
       "nameEn": "Tazria-Metzora",
-      "nameHe": "תזריע־מצורע"
+      "nameHe": "תזריע־מצורע",
+      "aliyot": [
+        {
+          "n": 1,
+          "startRef": "12:1",
+          "endRef": "13:23"
+        },
+        {
+          "n": 2,
+          "startRef": "13:24",
+          "endRef": "13:39"
+        },
+        {
+          "n": 3,
+          "startRef": "13:40",
+          "endRef": "13:54"
+        },
+        {
+          "n": 4,
+          "startRef": "13:55",
+          "endRef": "14:20"
+        },
+        {
+          "n": 5,
+          "startRef": "14:21",
+          "endRef": "14:32"
+        },
+        {
+          "n": 6,
+          "startRef": "14:33",
+          "endRef": "15:15"
+        },
+        {
+          "n": 7,
+          "startRef": "15:16",
+          "endRef": "15:33"
+        }
+      ]
     },
     {
       "slug": "vayakhel-pekudei",
@@ -603,7 +825,44 @@
         "pekudei"
       ],
       "nameEn": "Vayakhel-Pekudei",
-      "nameHe": "ויקהל־פקודי"
+      "nameHe": "ויקהל־פקודי",
+      "aliyot": [
+        {
+          "n": 1,
+          "startRef": "35:1",
+          "endRef": "35:29"
+        },
+        {
+          "n": 2,
+          "startRef": "35:30",
+          "endRef": "37:16"
+        },
+        {
+          "n": 3,
+          "startRef": "37:17",
+          "endRef": "37:29"
+        },
+        {
+          "n": 4,
+          "startRef": "38:1",
+          "endRef": "39:1"
+        },
+        {
+          "n": 5,
+          "startRef": "39:2",
+          "endRef": "39:21"
+        },
+        {
+          "n": 6,
+          "startRef": "39:22",
+          "endRef": "39:43"
+        },
+        {
+          "n": 7,
+          "startRef": "40:1",
+          "endRef": "40:38"
+        }
+      ]
     }
   ]
 }

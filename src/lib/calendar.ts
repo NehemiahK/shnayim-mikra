@@ -1,6 +1,13 @@
 import calendarData from '../data/calendar.json' with { type: 'json' };
 import indexData from '../data/parshiyot.json' with { type: 'json' };
-import type { Book, Calendar, ParshaCombo, ParshaMeta, ParshiyotIndex } from './types.js';
+import type {
+  Book,
+  Calendar,
+  ComboAliyah,
+  ParshaCombo,
+  ParshaMeta,
+  ParshiyotIndex,
+} from './types.js';
 
 const calendar = calendarData as Calendar;
 const index = indexData as ParshiyotIndex;
@@ -78,6 +85,8 @@ export interface ResolvedParsha {
   /** One slug normally, two for a combined week. */
   parts: string[];
   isCombo: boolean;
+  /** The seven aliyot of a combined reading; absent for a single parsha. */
+  comboAliyot?: ComboAliyah[];
 }
 
 /** Resolve a route slug — plain or combined — to the parshiyot to load. */
@@ -90,6 +99,7 @@ export function resolveParsha(slug: string): ResolvedParsha | undefined {
       nameHe: combo.nameHe,
       parts: [...combo.parts],
       isCombo: true,
+      comboAliyot: combo.aliyot,
     };
   }
   const meta = metaBySlug.get(slug);

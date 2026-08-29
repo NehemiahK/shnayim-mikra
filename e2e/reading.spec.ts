@@ -566,18 +566,48 @@ test.describe('combined parshiyot', () => {
   test('reads both halves in one session', async ({ page }) => {
     await page.goto('/p/matot-masei');
     await expect(page.locator('article[id^="unit-matot:"]').first()).toBeVisible();
-    // Both halves contribute aliyot to the navigator.
-    await expect(page.locator('nav button')).toHaveCount(14);
     await expect(page.locator('article[id^="unit-masei:"]').first()).toBeVisible();
   });
 
-  test('labels each half\'s aliyot instead of repeating 1-7 unmarked', async ({ page }) => {
+  test('is read as seven aliyot, the way the week is actually leined', async ({ page }) => {
     await page.goto('/p/matot-masei');
+    await expect(page.locator('article[id^="unit-"]').first()).toBeVisible();
+    // Seven, not fourteen — a combined week has its own divisions spanning
+    // both halves rather than each parsha's own seven back to back.
+    await expect(page.locator('nav').first().getByRole('button')).toHaveCount(7);
+  });
+
+  test('has an aliyah spanning the seam between the two parshiyot', async ({ page }) => {
+    await page.goto('/p/matot-masei');
+    await expect(page.locator('article[id^="unit-"]').first()).toBeVisible();
+
+    // Matot-Masei's fourth aliyah runs 32:20-33:49, crossing out of Matot and
+    // into Masei — the property that makes combined divisions irreducible to a
+    // concatenation of the two.
+    await page.locator('nav').first().getByRole('button').nth(3).click();
+    await expect(page.locator('#unit-matot\\:32\\:20')).toHaveCount(1);
+    await expect(page.locator('#unit-masei\\:33\\:49')).toHaveCount(1);
+  });
+
+  test('falls back to each half having its own seven when set to separate', async ({ page }) => {
+    await setSettings(page, { doubleParsha: 'separate' });
+    await page.goto('/p/matot-masei');
+    await expect(page.locator('article[id^="unit-"]').first()).toBeVisible();
+
     const nav = page.locator('nav').first();
+    await expect(nav.getByRole('button')).toHaveCount(14);
     await expect(nav.getByText('Matot', { exact: true })).toBeVisible();
     await expect(nav.getByText('Masei', { exact: true })).toBeVisible();
-    await expect(nav.getByRole('button', { name: 'Matot 1' })).toBeVisible();
-    await expect(nav.getByRole('button', { name: 'Masei 1' })).toBeVisible();
+  });
+
+  test('reads exactly the same verses either way, only grouped differently', async ({ page }) => {
+    const unitsFor = async (mode: string): Promise<number> => {
+      await setSettings(page, { doubleParsha: mode });
+      await page.goto('/p/matot-masei');
+      await expect(page.locator('article[id^="unit-"]').first()).toBeVisible();
+      return page.locator('article[id^="unit-"]').count();
+    };
+    expect(await unitsFor('combined')).toBe(await unitsFor('separate'));
   });
 
   test('appears as its own row in the browse list, after both individual halves', async ({ page }) => {

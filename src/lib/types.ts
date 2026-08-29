@@ -85,11 +85,24 @@ export interface ParshaMeta {
  * A double parsha (e.g. Matot-Masei). Rather than duplicating text, a combo
  * points at the two parshiyot it is read with; the reader concatenates them.
  */
+/** One aliyah of a combined reading, addressed by "chapter:verse" bounds. */
+export interface ComboAliyah {
+  n: number;
+  startRef: string;
+  endRef: string;
+}
+
 export interface ParshaCombo {
   slug: string;
   parts: [string, string];
   nameEn: string;
   nameHe: string;
+  /**
+   * The seven aliyot as the combined week is actually read. These are not
+   * either parsha's own divisions and cannot be derived from them — a single
+   * combined aliyah routinely spans the boundary between the two.
+   */
+  aliyot: ComboAliyah[];
 }
 
 export interface ParshiyotIndex {

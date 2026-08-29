@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ParshaText, RashiText } from '../lib/types.js';
+import type { ComboAliyah, ParshaText, RashiText } from '../lib/types.js';
 import {
   buildReadingUnits,
   nextIncomplete,
@@ -9,6 +9,7 @@ import {
 } from '../lib/reading-units.js';
 import { loadRashi } from '../lib/data.js';
 import { revealElement } from '../lib/scroll.js';
+import { applyCombinedAliyot } from '../lib/combined.js';
 import { useProgress } from '../store/progress.js';
 import { useSettings } from '../store/settings.js';
 import { useT } from '../hooks/useT.js';
@@ -21,9 +22,15 @@ import { Choice } from './Field.js';
 interface ReadingSessionProps {
   parts: ParshaText[];
   title: string;
+  /** Present only for a combined week; the seven aliyot it is read with. */
+  comboAliyot?: ComboAliyah[] | undefined;
 }
 
-export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX.Element {
+export function ReadingSession({
+  parts: rawParts,
+  title,
+  comboAliyot,
+}: ReadingSessionProps): React.JSX.Element {
   const { t, lang } = useT();
   const settings = useSettings((s) => s.settings);
   const setSetting = useSettings((s) => s.set);
@@ -45,14 +52,23 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
   // here rather than re-derived (and easy to get wrong) in each card.
   const rashiFallbackActive = settings.targum === 'rashi' && settings.rashiFallbackToOnkelos;
 
+  // A combined week is read as seven aliyot across both parshiyot, not as
+  // each one's own seven — unless the reader has asked to see them separately.
+  const combineAliyot = comboAliyot !== undefined && settings.doubleParsha === 'combined';
+  const parts = useMemo(
+    () => (combineAliyot && comboAliyot ? applyCombinedAliyot(rawParts, comboAliyot) : rawParts),
+    [rawParts, comboAliyot, combineAliyot],
+  );
+
   const units = useMemo(
     () =>
       buildReadingUnits(parts, {
         structure: settings.structure,
         targum: settings.targum,
         mikraRepetitions: settings.mikraRepetitions,
+        mergeAliyotAcrossParts: combineAliyot,
       }),
-    [parts, settings.structure, settings.targum, settings.mikraRepetitions],
+    [parts, settings.structure, settings.targum, settings.mikraRepetitions, combineAliyot],
   );
 
   const byId = useMemo(() => new Map(parts.map((p) => [p.slug, p])), [parts]);
@@ -162,14 +178,16 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
     if (el) revealElement(el, headerRef.current);
   }, [units, isDone]);
 
-  const navItems = useMemo(
-    () =>
-      [...aliyot.entries()].map(([key, summary]) => {
-        const [slug = '', n = '1'] = key.split(':');
-        return { key, slug, n: Number(n), summary };
-      }),
-    [aliyot],
-  );
+  const navItems = useMemo(() => {
+    const firstUnitFor = new Map<string, (typeof units)[number]>();
+    for (const unit of units) {
+      if (!firstUnitFor.has(unit.aliyahKey)) firstUnitFor.set(unit.aliyahKey, unit);
+    }
+    return [...aliyot.entries()].map(([key, summary]) => {
+      const unit = firstUnitFor.get(key);
+      return { key, slug: unit?.slug ?? '', n: unit?.aliyah ?? 1, summary };
+    });
+  }, [aliyot, units]);
 
   // Explicit navigation, not "auto" scroll: the reader tapped this specific
   // aliyah number and asked to go there. Instant rather than smooth because
@@ -177,7 +195,7 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
   // and disorienting rather than pleasant.
   const jump = useCallback(
     (key: string) => {
-      const first = units.find((u) => `${u.slug}:${String(u.aliyah)}` === key);
+      const first = units.find((u) => u.aliyahKey === key);
       if (first) document.getElementById(`unit-${first.id}`)?.scrollIntoView({ block: 'start', behavior: 'instant' });
     },
     [units],
@@ -210,7 +228,7 @@ export function ReadingSession({ parts, title }: ReadingSessionProps): React.JSX
           <AliyahNav
             aliyot={navItems}
             names={navNames}
-            showSlug={parts.length > 1}
+            showSlug={parts.length > 1 && !combineAliyot}
             onJump={jump}
             label={`${title} — ${t('aliyot')}`}
           />

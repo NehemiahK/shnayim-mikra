@@ -5,6 +5,8 @@ import type { ReadingStructure, TargumSource } from '../lib/reading-units.js';
 import type { Region } from '../lib/calendar.js';
 
 export type Theme = 'light' | 'dark' | 'system';
+/** `combined` follows how the week is actually read; `separate` keeps each parsha's own seven. */
+export type DoubleParshaMode = 'combined' | 'separate';
 export type UiLang = 'en' | 'he';
 
 export interface Settings {
@@ -14,6 +16,8 @@ export interface Settings {
   mikraRepetitions: number;
   /** When the chosen third reading is Rashi and a verse has none, read Targum there instead. */
   rashiFallbackToOnkelos: boolean;
+  /** How a week that reads two parshiyot together is divided into aliyot. */
+  doubleParsha: DoubleParshaMode;
   // How the text looks
   hebrewStyle: HebrewStyle;
   fontScale: number;
@@ -32,6 +36,7 @@ export const DEFAULT_SETTINGS: Settings = {
   targum: 'onkelos',
   mikraRepetitions: 2,
   rashiFallbackToOnkelos: true,
+  doubleParsha: 'combined',
   hebrewStyle: 'taamim',
   fontScale: 1,
   showTranslation: false,
@@ -60,6 +65,7 @@ function coerce(raw: unknown): Settings {
     mikraRepetitions: Math.min(3, Math.max(1, reps)),
     rashiFallbackToOnkelos:
       typeof v.rashiFallbackToOnkelos === 'boolean' ? v.rashiFallbackToOnkelos : true,
+    doubleParsha: pick('doubleParsha', ['combined', 'separate']),
     hebrewStyle: pick('hebrewStyle', ['taamim', 'nikud', 'plain']),
     fontScale: Math.min(FONT_SCALE_RANGE.max, Math.max(FONT_SCALE_RANGE.min, scale)),
     showTranslation: typeof v.showTranslation === 'boolean' ? v.showTranslation : false,

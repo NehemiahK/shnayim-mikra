@@ -10,6 +10,7 @@ import { mkdir, writeFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { HebrewCalendar, HDate } from '@hebcal/core';
+import { getLeyningForParsha } from '@hebcal/leyning';
 import {
   fetchParshiyot,
   fetchText,
@@ -35,6 +36,7 @@ import {
   type ParshaMeta,
   type ParshaCombo,
   type ParshaText,
+  type ComboAliyah,
 } from '../src/lib/schema.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -311,6 +313,27 @@ function validateParsha(built: BuiltParsha): string[] {
   return problems;
 }
 
+/**
+ * The seven aliyot a combined week is actually read with.
+ *
+ * These are not either parsha's own divisions and cannot be computed from
+ * them — Matot-Masei's fourth aliyah, for instance, runs 32:20-33:49, straight
+ * across the boundary between the two. Sefaria's index only carries each
+ * parsha separately, so the combined divisions come from @hebcal/leyning.
+ */
+function combinedAliyot(hebcalName: string): ComboAliyah[] {
+  const leyning = getLeyningForParsha(hebcalName);
+  const aliyot: ComboAliyah[] = [];
+
+  for (let n = 1; n <= 7; n++) {
+    const entry = leyning.fullkriyah[String(n)];
+    if (!entry) throw new Error(`${hebcalName}: no aliyah ${String(n)} in leyning data`);
+    const { b, e } = entry as { b: string; e: string };
+    aliyot.push({ n, startRef: b, endRef: e });
+  }
+  return aliyot;
+}
+
 // ---------------------------------------------------------------------------
 // Calendar
 // ---------------------------------------------------------------------------
@@ -403,6 +426,9 @@ async function main(): Promise<void> {
         parts: [a.slug, b.slug],
         nameEn: `${a.nameEn}-${b.nameEn}`,
         nameHe: `${a.nameHe}־${b.nameHe}`,
+        // hebcal names a combined reading by joining its halves, which is
+        // also the key its leyning tables use.
+        aliyot: combinedAliyot(names.join('-')),
       });
     }
     return slug;
@@ -413,6 +439,66 @@ async function main(): Promise<void> {
 
   if (unmatched.size > 0) {
     console.error(`\nCalendar parsha names with no Sefaria match: ${[...unmatched].join(', ')}`);
+    process.exit(1);
+  }
+
+  // The combined aliyot come from hebcal while the verse text comes from
+  // Sefaria. They are independent sources, so verify they agree about where a
+  // combined reading starts, ends, and that its seven aliyot leave no gap —
+  // a silent mismatch would drop verses from the reading.
+  const comboProblems: string[] = [];
+  for (const combo of combos.values()) {
+    const [aSlug, bSlug] = combo.parts;
+    const a = built.find((x) => x.text.slug === aSlug)?.text;
+    const b = built.find((x) => x.text.slug === bSlug)?.text;
+    if (!a || !b) {
+      comboProblems.push(`${combo.slug}: missing one of its parts`);
+      continue;
+    }
+    const verses = [...a.verses, ...b.verses];
+    const first = verses[0];
+    const last = verses[verses.length - 1];
+    const sorted = [...combo.aliyot].sort((x, y) => x.n - y.n);
+
+    if (first && sorted[0]?.startRef !== verseKey(first.c, first.v)) {
+      comboProblems.push(
+        `${combo.slug}: starts at ${String(sorted[0]?.startRef)} but its text starts at ${verseKey(first.c, first.v)}`,
+      );
+    }
+    if (last && sorted[6]?.endRef !== verseKey(last.c, last.v)) {
+      comboProblems.push(
+        `${combo.slug}: ends at ${String(sorted[6]?.endRef)} but its text ends at ${verseKey(last.c, last.v)}`,
+      );
+    }
+
+    const known = new Set(verses.map((v) => verseKey(v.c, v.v)));
+    for (const aliyah of sorted) {
+      for (const ref of [aliyah.startRef, aliyah.endRef]) {
+        if (!known.has(ref)) {
+          comboProblems.push(`${combo.slug}: aliyah ${String(aliyah.n)} bound ${ref} is not a verse of this reading`);
+        }
+      }
+    }
+    // Every verse must fall inside exactly one aliyah.
+    const covered = new Set<string>();
+    for (const aliyah of sorted) {
+      let inside = false;
+      for (const v of verses) {
+        const key = verseKey(v.c, v.v);
+        if (key === aliyah.startRef) inside = true;
+        if (inside) covered.add(key);
+        if (key === aliyah.endRef) break;
+      }
+    }
+    if (covered.size !== verses.length) {
+      comboProblems.push(
+        `${combo.slug}: aliyot cover ${String(covered.size)} of ${String(verses.length)} verses`,
+      );
+    }
+  }
+  if (comboProblems.length > 0) {
+    console.error('\nCombined-reading validation failed:');
+    for (const p of comboProblems) console.error(`  - ${p}`);
     process.exit(1);
   }
 

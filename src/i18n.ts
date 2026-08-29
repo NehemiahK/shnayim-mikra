@@ -61,6 +61,10 @@ const en = {
   targumSource: 'Third reading',
   targumHelp: 'Onkelos is the standard practice. The Rema permits Rashi in its place, and some are careful to read both.',
   targumBoth: 'Onkelos and Rashi',
+  doubleParsha: 'Double parshiyot',
+  doubleParshaCombined: 'As read',
+  doubleParshaSeparate: 'Separate',
+  doubleParshaHelp: 'Some weeks read two parshiyot together. As read divides them into the seven aliyot of the combined reading; Separate keeps each parsha\u2019s own seven.',
   /** Short label for the compact quick-switch on the reading page itself. */
   both: 'Both',
 
@@ -170,6 +174,10 @@ const he: Dict = {
   targumSource: 'הקריאה השלישית',
   targumHelp: 'אונקלוס הוא המנהג הרווח. הרמ״א מתיר רש״י במקומו, ויש המדקדקים לקרוא את שניהם.',
   targumBoth: 'אונקלוס ורש״י',
+  doubleParsha: 'פרשיות מחוברות',
+  doubleParshaCombined: 'כפי שנקראת',
+  doubleParshaSeparate: 'בנפרד',
+  doubleParshaHelp: 'יש שבתות שבהן קוראים שתי פרשיות יחד. ״כפי שנקראת״ מחלק לשבע העליות של הקריאה המחוברת; ״בנפרד״ שומר על שבע העליות של כל פרשה.',
   both: 'שניהם',
 
   repetitions: 'מספר קריאות המקרא',

@@ -11,6 +11,7 @@ import type {
   Aliyah,
   Attribution,
   Calendar,
+  ComboAliyah,
   ParshaCombo,
   ParshaMeta,
   ParshaText,
@@ -76,11 +77,18 @@ export const parshaMetaSchema = z.object({
   ref: z.string().min(1),
 });
 
+export const comboAliyahSchema = z.object({
+  n: z.number().int().min(1).max(7),
+  startRef: z.string().min(1),
+  endRef: z.string().min(1),
+});
+
 export const parshaComboSchema = z.object({
   slug: z.string().min(1),
   parts: z.tuple([z.string().min(1), z.string().min(1)]),
   nameEn: z.string().min(1),
   nameHe: z.string().min(1),
+  aliyot: z.array(comboAliyahSchema).length(7),
 });
 
 export const parshiyotIndexSchema = z.object({
@@ -121,6 +129,7 @@ export const __schemaConformance = {
   rashiComment: true as Conforms<typeof rashiCommentSchema, RashiComment>,
   rashiText: true as Conforms<typeof rashiTextSchema, RashiText>,
   parshaMeta: true as Conforms<typeof parshaMetaSchema, ParshaMeta>,
+  comboAliyah: true as Conforms<typeof comboAliyahSchema, ComboAliyah>,
   parshaCombo: true as Conforms<typeof parshaComboSchema, ParshaCombo>,
   parshiyotIndex: true as Conforms<typeof parshiyotIndexSchema, ParshiyotIndex>,
   calendar: true as Conforms<typeof calendarSchema, Calendar>,

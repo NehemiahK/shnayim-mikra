@@ -14,6 +14,11 @@ export interface ReadingOptions {
   targum: TargumSource;
   /** How many times the Hebrew is read. Two by definition, but configurable. */
   mikraRepetitions: number;
+  /**
+   * Group aliyot by number across both halves of a combined week, so an
+   * aliyah spanning the boundary counts as one rather than two.
+   */
+  mergeAliyotAcrossParts?: boolean;
 }
 
 export const DEFAULT_READING_OPTIONS: ReadingOptions = {
@@ -38,6 +43,12 @@ export interface ReadingUnit {
   slug: string;
   /** 1-based aliyah number within that parsha. */
   aliyah: number;
+  /**
+   * Grouping key for the aliyah navigator. Normally scoped by parsha; for a
+   * combined week read as seven, the number alone, so the halves of a
+   * boundary-spanning aliyah group together.
+   */
+  aliyahKey: string;
   /** Indices into that parsha's `verses`. One for verse units, many for blocks. */
   verses: number[];
   steps: ReadingStep[];
@@ -69,6 +80,8 @@ function aliyahStepId(slug: string, aliyah: number, kind: StepKind, pass: number
 
 function buildForParsha(parsha: ParshaText, options: ReadingOptions): ReadingUnit[] {
   const { slug, verses, aliyot } = parsha;
+  const keyFor = (n: number): string =>
+    options.mergeAliyotAcrossParts === true ? String(n) : `${slug}:${String(n)}`;
   const repetitions = Math.max(1, Math.trunc(options.mikraRepetitions));
   const targums = targumKinds(options.targum);
   const units: ReadingUnit[] = [];
@@ -92,6 +105,7 @@ function buildForParsha(parsha: ParshaText, options: ReadingOptions): ReadingUni
           id: `${slug}:${String(verse.c)}:${String(verse.v)}`,
           slug,
           aliyah: aliyah.n,
+          aliyahKey: keyFor(aliyah.n),
           verses: [index],
           steps,
         });
@@ -102,6 +116,7 @@ function buildForParsha(parsha: ParshaText, options: ReadingOptions): ReadingUni
           id: `${slug}:a${String(aliyah.n)}:mikra${String(pass)}`,
           slug,
           aliyah: aliyah.n,
+          aliyahKey: keyFor(aliyah.n),
           verses: indices,
           steps: [{ id: aliyahStepId(slug, aliyah.n, 'mikra', pass), kind: 'mikra', pass }],
         });
@@ -111,6 +126,7 @@ function buildForParsha(parsha: ParshaText, options: ReadingOptions): ReadingUni
           id: `${slug}:a${String(aliyah.n)}:${kind}`,
           slug,
           aliyah: aliyah.n,
+          aliyahKey: keyFor(aliyah.n),
           verses: indices,
           steps: [{ id: aliyahStepId(slug, aliyah.n, kind, 1), kind, pass: 1 }],
         });
@@ -167,7 +183,7 @@ export function summarizeByAliyah(
 ): Map<string, ProgressSummary> {
   const groups = new Map<string, ReadingUnit[]>();
   for (const unit of units) {
-    const key = `${unit.slug}:${String(unit.aliyah)}`;
+    const key = unit.aliyahKey;
     const bucket = groups.get(key);
     if (bucket) bucket.push(unit);
     else groups.set(key, [unit]);
