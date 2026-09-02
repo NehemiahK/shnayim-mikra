@@ -393,10 +393,75 @@ test.describe('Rashi and translation', () => {
   });
 
   test('translation can be shown inline under every verse', async ({ page }) => {
-    await setSettings(page, { showTranslation: true });
+    await setSettings(page, { translation: 'end' });
     await page.goto(`/p/${PARSHA}`);
     const card = page.locator('article[id^="unit-"]').first();
     await expect(card).toContainText('When it happens that you come to the land');
+  });
+});
+
+test.describe('translation placement', () => {
+  // github.com/NehemiahK/shnayim-mikra/issues/4 — reading the English before
+  // the Targum rather than after the whole verse.
+  const ENGLISH = 'When it happens that you come to the land';
+
+  /**
+   * Where the English sits relative to the Targum, by reading order. Anchored
+   * on the "Onkelos" step label rather than the Aramaic itself — matching
+   * vocalised text in a test is needlessly brittle.
+   */
+  const orderIn = async (page: Page): Promise<[number, number]> => {
+    const text = await page.locator('#unit-ki-tavo\\:26\\:1').innerText();
+    return [text.indexOf(ENGLISH), text.indexOf('Onkelos')];
+  };
+
+  test('is hidden inline by default, still available on expand', async ({ page }) => {
+    await page.goto(`/p/${PARSHA}`);
+    const card = page.locator('#unit-ki-tavo\\:26\\:1');
+    await expect(card).not.toContainText(ENGLISH);
+
+    await card.locator('button[aria-controls^="detail-"]').click();
+    await expect(card).toContainText(ENGLISH);
+  });
+
+  test('sits before the Targum when set to after the Hebrew', async ({ page }) => {
+    await setSettings(page, { translation: 'after' });
+    await page.goto(`/p/${PARSHA}`);
+    await expect(page.locator('#unit-ki-tavo\\:26\\:1')).toContainText(ENGLISH);
+
+    const [english, targum] = await orderIn(page);
+    expect(english).toBeGreaterThan(-1);
+    expect(targum).toBeGreaterThan(-1);
+    expect(english).toBeLessThan(targum);
+  });
+
+  test('sits after the Targum when set to the end', async ({ page }) => {
+    await setSettings(page, { translation: 'end' });
+    await page.goto(`/p/${PARSHA}`);
+    await expect(page.locator('#unit-ki-tavo\\:26\\:1')).toContainText(ENGLISH);
+
+    const [english, targum] = await orderIn(page);
+    expect(english).toBeGreaterThan(targum);
+  });
+
+  test('never shows two copies at once while a verse is expanded', async ({ page }) => {
+    await setSettings(page, { translation: 'after' });
+    await page.goto(`/p/${PARSHA}`);
+    const card = page.locator('#unit-ki-tavo\\:26\\:1');
+    await card.locator('button[aria-controls^="detail-"]').click();
+
+    const text = await card.innerText();
+    expect(text.split(ENGLISH).length - 1).toBe(1);
+  });
+
+  test('is settable from the Settings page', async ({ page }) => {
+    await page.goto('/settings');
+    await page.getByRole('radio', { name: 'After the Hebrew' }).click();
+    await page.goto(`/p/${PARSHA}`);
+
+    const [english, targum] = await orderIn(page);
+    expect(english).toBeGreaterThan(-1);
+    expect(english).toBeLessThan(targum);
   });
 });
 

@@ -258,7 +258,7 @@ export function ReadingSession({
                 unit={unit}
                 parsha={parsha}
                 hebrewStyle={settings.hebrewStyle}
-                showTranslation={settings.showTranslation}
+                translation={settings.translation}
                 rashiEnglish={settings.rashiEnglish}
                 onkelosEnglish={settings.onkelosEnglish}
                 rashiFallbackToOnkelos={rashiFallbackActive}
@@ -280,7 +280,7 @@ export function ReadingSession({
               unit={unit}
               parsha={parsha}
               hebrewStyle={settings.hebrewStyle}
-              showTranslation={settings.showTranslation}
+              translation={settings.translation}
               rashiEnglish={settings.rashiEnglish}
               onkelosEnglish={settings.onkelosEnglish}
               rashiFallbackToOnkelos={rashiFallbackActive}

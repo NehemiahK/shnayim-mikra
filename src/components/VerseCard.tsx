@@ -7,12 +7,13 @@ import { RashiComments } from './RashiComments.js';
 import { EnglishDisclosure } from './EnglishDisclosure.js';
 import { RichText } from './RichText.js';
 import type { TranslationKey } from '../i18n.js';
+import type { TranslationPlacement } from '../store/settings.js';
 
 export interface VerseCardProps {
   unit: ReadingUnit;
   parsha: ParshaText;
   hebrewStyle: HebrewStyle;
-  showTranslation: boolean;
+  translation: TranslationPlacement;
   rashiEnglish: boolean;
   onkelosEnglish: boolean;
   rashiFallbackToOnkelos: boolean;
@@ -38,7 +39,7 @@ function VerseCardImpl({
   unit,
   parsha,
   hebrewStyle,
-  showTranslation,
+  translation,
   rashiEnglish,
   onkelosEnglish,
   rashiFallbackToOnkelos,
@@ -68,6 +69,11 @@ function VerseCardImpl({
   const allDone = !state.includes('0');
   const noneDone = !state.includes('1');
   const wholeVerseState: 'done' | 'partial' | 'empty' = allDone ? 'done' : noneDone ? 'empty' : 'partial';
+
+  // Suppressed while expanded: the detail panel below already shows the
+  // translation under its own heading, and two copies at once reads as a bug.
+  const inlineTranslation = expanded ? 'off' : translation;
+  const translationText = <p className="english text-[var(--color-muted)]">{verse.en}</p>;
 
   // When Rashi is the assigned third reading but this verse has none, the
   // fallback substitutes Onkelos so the reading is never left empty — the
@@ -166,6 +172,7 @@ function VerseCardImpl({
               }}
             />
           </div>
+          {inlineTranslation === 'after' && <div className="mt-2">{translationText}</div>}
         </section>
 
         {targumSteps.length > 0 && (
@@ -222,10 +229,8 @@ function VerseCardImpl({
         )}
       </div>
 
-      {showTranslation && !expanded && (
-        <p className="english mt-3 border-t border-[var(--color-line)] pt-3 text-[var(--color-muted)]">
-          {verse.en}
-        </p>
+      {inlineTranslation === 'end' && (
+        <div className="mt-3 border-t border-[var(--color-line)] pt-3">{translationText}</div>
       )}
 
       {expanded && (

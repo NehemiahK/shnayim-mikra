@@ -124,11 +124,17 @@ export function Settings(): React.JSX.Element {
             className="w-40 accent-[var(--color-accent)]"
           />
         </Row>
-        <Row label={t('showTranslation')} help={t('showTranslationHelp')}>
-          <Toggle
-            label={t('showTranslation')}
-            checked={settings.showTranslation}
-            onChange={(v) => { set('showTranslation', v); }}
+        <Row stacked label={t('translationPlacement')} help={t('translationPlacementHelp')}>
+          <Choice
+            label={t('translationPlacement')}
+            full
+            value={settings.translation}
+            onChange={(v) => { set('translation', v); }}
+            options={[
+              { value: 'off', label: t('translationOff') },
+              { value: 'after', label: t('translationAfter') },
+              { value: 'end', label: t('translationEnd') },
+            ]}
           />
         </Row>
         <Row label={t('onkelosEnglish')} help={t('onkelosEnglishHelp')}>

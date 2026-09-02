@@ -6,12 +6,13 @@ import { RashiComments } from './RashiComments.js';
 import { EnglishDisclosure } from './EnglishDisclosure.js';
 import { RichText } from './RichText.js';
 import type { TranslationKey } from '../i18n.js';
+import type { TranslationPlacement } from '../store/settings.js';
 
 export interface AliyahBlockCardProps {
   unit: ReadingUnit;
   parsha: ParshaText;
   hebrewStyle: HebrewStyle;
-  showTranslation: boolean;
+  translation: TranslationPlacement;
   rashiEnglish: boolean;
   onkelosEnglish: boolean;
   rashiFallbackToOnkelos: boolean;
@@ -27,7 +28,7 @@ function AliyahBlockCardImpl({
   unit,
   parsha,
   hebrewStyle,
-  showTranslation,
+  translation,
   rashiEnglish,
   onkelosEnglish,
   rashiFallbackToOnkelos,
@@ -105,7 +106,12 @@ function AliyahBlockCardImpl({
                     t={t}
                   />
                 )}
-                {showTranslation && kind === 'mikra' && (
+                {/*
+                  A block holds one kind of reading, so there is no Targum here
+                  for the translation to sit before or after — "after" and "end"
+                  are the same position, and both simply show it.
+                */}
+                {translation !== 'off' && kind === 'mikra' && (
                   <p className="english mt-1 text-[var(--color-muted)]">{verse.en}</p>
                 )}
               </div>

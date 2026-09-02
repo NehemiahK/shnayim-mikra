@@ -40,7 +40,7 @@ function setup(over: Partial<VerseCardProps> = {}, targum: TargumSource = 'onkel
     unit,
     parsha,
     hebrewStyle: 'taamim',
-    showTranslation: false,
+    translation: 'off',
     rashiEnglish: false,
     onkelosEnglish: false,
     rashiFallbackToOnkelos: false,
@@ -176,14 +176,37 @@ describe('VerseCard', () => {
     expect(text).not.toMatch(/[֑-֯]/u);
   });
 
-  it('shows the translation inline when enabled', () => {
-    setup({ showTranslation: true });
-    expect(screen.getByText('In the beginning God created')).toBeInTheDocument();
-  });
+  describe('translation placement', () => {
+    const englishText = 'In the beginning God created';
 
-  it('hides the translation by default', () => {
-    setup();
-    expect(screen.queryByText('In the beginning God created')).not.toBeInTheDocument();
+    it('is hidden inline by default', () => {
+      setup();
+      expect(screen.queryByText(englishText)).not.toBeInTheDocument();
+    });
+
+    it('sits under the Hebrew, before the Targum, when set to after', () => {
+      setup({ translation: 'after' });
+      const english = screen.getByText(englishText);
+      const targum = screen.getByText(/בְּקַדְמִין/u);
+
+      // Document order decides which the reader meets first.
+      expect(english.compareDocumentPosition(targum) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('sits after the Targum when set to end', () => {
+      setup({ translation: 'end' });
+      const english = screen.getByText(englishText);
+      const targum = screen.getByText(/בְּקַדְמִין/u);
+
+      expect(english.compareDocumentPosition(targum) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+    });
+
+    it('shows only one copy while a verse is expanded', () => {
+      setup({ translation: 'after', expanded: true });
+      // The detail panel has its own headed copy; the inline one steps aside.
+      expect(screen.getAllByText(englishText)).toHaveLength(1);
+      expect(screen.getByRole('heading', { name: 'Translation' })).toBeInTheDocument();
+    });
   });
 
   it('reveals translation and Rashi when expanded', () => {

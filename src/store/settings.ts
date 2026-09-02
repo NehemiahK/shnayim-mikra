@@ -7,6 +7,8 @@ import type { Region } from '../lib/calendar.js';
 export type Theme = 'light' | 'dark' | 'system';
 /** `combined` follows how the week is actually read; `separate` keeps each parsha's own seven. */
 export type DoubleParshaMode = 'combined' | 'separate';
+/** Where the English translation sits under a verse being read. */
+export type TranslationPlacement = 'off' | 'after' | 'end';
 export type UiLang = 'en' | 'he';
 
 export interface Settings {
@@ -21,7 +23,12 @@ export interface Settings {
   // How the text looks
   hebrewStyle: HebrewStyle;
   fontScale: number;
-  showTranslation: boolean;
+  /**
+   * `after` puts the English straight under the Hebrew, before the Targum;
+   * `end` puts it below the whole verse. Either way it is always available by
+   * expanding a verse, so `off` only hides the inline copy.
+   */
+  translation: TranslationPlacement;
   /** Whether Rashi's English starts expanded. The accordion is always there. */
   rashiEnglish: boolean;
   /** Whether the Targum's English starts expanded. */
@@ -41,7 +48,7 @@ export const DEFAULT_SETTINGS: Settings = {
   doubleParsha: 'combined',
   hebrewStyle: 'taamim',
   fontScale: 1,
-  showTranslation: false,
+  translation: 'off',
   rashiEnglish: false,
   onkelosEnglish: false,
   parallel: false,
@@ -53,8 +60,26 @@ export const DEFAULT_SETTINGS: Settings = {
 const KEY = 'sm:settings:v1';
 export const FONT_SCALE_RANGE = { min: 0.85, max: 1.8, step: 0.05 } as const;
 
-/** Unknown or out-of-range stored values fall back rather than breaking the UI. */
-function coerce(raw: unknown): Settings {
+/**
+ * Reads the translation placement, upgrading the boolean this setting used to
+ * be. Without this, an existing reader who had translations on would find them
+ * silently switched off, since a stored `true` matches none of the new values.
+ */
+function migrateTranslation(raw: unknown): TranslationPlacement {
+  const v = (raw ?? {}) as { translation?: unknown; showTranslation?: unknown };
+  if (v.translation === 'off' || v.translation === 'after' || v.translation === 'end') {
+    return v.translation;
+  }
+  if (typeof v.showTranslation === 'boolean') return v.showTranslation ? 'end' : 'off';
+  return 'off';
+}
+
+/**
+ * Turn whatever is in storage into valid settings. Unknown or out-of-range
+ * values fall back rather than breaking the UI, and older shapes are migrated.
+ * Exported so the upgrade paths can be tested directly.
+ */
+export function parseSettings(raw: unknown): Settings {
   const v = (raw ?? {}) as Partial<Settings>;
   const pick = <K extends keyof Settings>(key: K, allowed: readonly Settings[K][]): Settings[K] =>
     allowed.includes(v[key] as Settings[K]) ? (v[key] as Settings[K]) : DEFAULT_SETTINGS[key];
@@ -71,7 +96,7 @@ function coerce(raw: unknown): Settings {
     doubleParsha: pick('doubleParsha', ['combined', 'separate']),
     hebrewStyle: pick('hebrewStyle', ['taamim', 'nikud', 'plain']),
     fontScale: Math.min(FONT_SCALE_RANGE.max, Math.max(FONT_SCALE_RANGE.min, scale)),
-    showTranslation: typeof v.showTranslation === 'boolean' ? v.showTranslation : false,
+    translation: migrateTranslation(raw),
     rashiEnglish: typeof v.rashiEnglish === 'boolean' ? v.rashiEnglish : false,
     onkelosEnglish: typeof v.onkelosEnglish === 'boolean' ? v.onkelosEnglish : false,
     parallel: typeof v.parallel === 'boolean' ? v.parallel : false,
@@ -88,10 +113,10 @@ interface SettingsStore {
 }
 
 export const useSettings = create<SettingsStore>((set) => ({
-  settings: coerce(readJson<unknown>(KEY, {})),
+  settings: parseSettings(readJson<unknown>(KEY, {})),
   set: (key, value) =>
     set((state) => {
-      const settings = coerce({ ...state.settings, [key]: value });
+      const settings = parseSettings({ ...state.settings, [key]: value });
       writeJson(KEY, settings);
       return { settings };
     }),

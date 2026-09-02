@@ -79,8 +79,11 @@ const en = {
   stylePlain: 'Letters only',
 
   fontSize: 'Text size',
-  showTranslation: 'Show translation',
-  showTranslationHelp: 'Display the English under every verse, not only when expanded.',
+  translationPlacement: 'English translation',
+  translationOff: 'Off',
+  translationAfter: 'After the Hebrew',
+  translationEnd: 'At the end',
+  translationPlacementHelp: 'Where the English sits while you read. After the Hebrew puts it before the Targum, so you can see what the pasuk means before reading it again. It is always available by expanding a verse.',
   parallel: 'Side by side',
   parallelHelp: 'On wider screens, place the Targum beside the Hebrew.',
 
@@ -193,8 +196,11 @@ const he: Dict = {
   stylePlain: 'אותיות בלבד',
 
   fontSize: 'גודל טקסט',
-  showTranslation: 'הצג תרגום',
-  showTranslationHelp: 'הצג את האנגלית תחת כל פסוק, ולא רק בהרחבה.',
+  translationPlacement: 'תרגום לאנגלית',
+  translationOff: 'כבוי',
+  translationAfter: 'אחרי העברית',
+  translationEnd: 'בסוף',
+  translationPlacementHelp: 'היכן האנגלית מופיעה בזמן הקריאה. ״אחרי העברית״ ממקמת אותה לפני התרגום, כדי להבין את הפסוק לפני הקריאה החוזרת. תמיד זמינה בהרחבת הפסוק.',
   parallel: 'זה לצד זה',
   parallelHelp: 'במסכים רחבים, הצג את התרגום לצד המקרא.',
 
