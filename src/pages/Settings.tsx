@@ -112,6 +112,18 @@ export function Settings(): React.JSX.Element {
             ]}
           />
         </Row>
+        <Row stacked label={t('hebrewFont')} help={t('hebrewFontHelp')}>
+          <Choice
+            label={t('hebrewFont')}
+            full
+            value={settings.hebrewFont}
+            onChange={(v) => { set('hebrewFont', v); }}
+            options={[
+              { value: 'bundled', label: t('hebrewFontBundled') },
+              { value: 'system', label: t('hebrewFontSystem') },
+            ]}
+          />
+        </Row>
         <Row label={t('fontSize')}>
           <input
             type="range"

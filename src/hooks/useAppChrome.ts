@@ -8,7 +8,7 @@ import { isRtl } from '../i18n.js';
  * the store can never disagree.
  */
 export function useAppChrome(): void {
-  const { theme, uiLang, fontScale } = useSettings((s) => s.settings);
+  const { theme, uiLang, fontScale, hebrewFont } = useSettings((s) => s.settings);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -40,4 +40,13 @@ export function useAppChrome(): void {
   useEffect(() => {
     document.documentElement.style.setProperty('--reading-scale', String(fontScale));
   }, [fontScale]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (hebrewFont === 'system') {
+      root.style.setProperty('--font-hebrew', 'var(--font-hebrew-system)');
+    } else {
+      root.style.removeProperty('--font-hebrew');
+    }
+  }, [hebrewFont]);
 }

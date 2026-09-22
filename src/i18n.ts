@@ -79,6 +79,10 @@ const en = {
   stylePlain: 'Letters only',
 
   fontSize: 'Text size',
+  hebrewFont: 'Hebrew font',
+  hebrewFontBundled: 'Built-in',
+  hebrewFontSystem: 'Device font',
+  hebrewFontHelp: "If cantillation marks and vowels overlap on your device, try your device's own Hebrew font instead.",
   translationPlacement: 'English translation',
   translationOff: 'Off',
   translationAfter: 'After the Hebrew',
@@ -196,6 +200,10 @@ const he: Dict = {
   stylePlain: 'אותיות בלבד',
 
   fontSize: 'גודל טקסט',
+  hebrewFont: 'גופן עברי',
+  hebrewFontBundled: 'מובנה',
+  hebrewFontSystem: 'גופן המכשיר',
+  hebrewFontHelp: 'אם הטעמים והניקוד חופפים במכשיר שלך, נסה את הגופן העברי המובנה במכשיר במקום זאת.',
   translationPlacement: 'תרגום לאנגלית',
   translationOff: 'כבוי',
   translationAfter: 'אחרי העברית',

@@ -15,6 +15,9 @@
 @theme {
   --font-hebrew: 'Noto Serif Hebrew', 'Taamey Frank CLM', 'SBL Hebrew', 'David Libre',
     'Times New Roman', serif;
+  /* Skips the bundled font, so the reader's own device font is used instead —
+     see Settings > Hebrew font. */
+  --font-hebrew-system: 'Taamey Frank CLM', 'SBL Hebrew', 'David Libre', 'Times New Roman', serif;
   --font-ui: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
   --color-paper: #faf8f4;
