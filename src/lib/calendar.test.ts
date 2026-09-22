@@ -55,11 +55,11 @@ describe('readingForDate', () => {
   });
 
   it('skips ahead when a festival displaces the weekly reading', () => {
-    // Sukkot 2026 falls across the Shabbat of 2026-09-26.
-    const reading = readingForDate(d('2026-09-26'), 'diaspora');
+    // Pesach 2026 falls across the Shabbat of 2026-04-04.
+    const reading = readingForDate(d('2026-04-04'), 'diaspora');
     expect(reading).toBeDefined();
     expect(reading?.isUpcoming).toBe(true);
-    expect(reading?.shabbat.getTime()).toBeGreaterThan(d('2026-09-26').getTime());
+    expect(reading?.shabbat.getTime()).toBeGreaterThan(d('2026-04-04').getTime());
   });
 
   it('returns a reading for every week across several years', () => {
@@ -73,6 +73,21 @@ describe('readingForDate', () => {
 
   it('returns undefined before the table begins', () => {
     expect(readingForDate(d('2010-01-01'), 'diaspora')).toBeUndefined();
+  });
+
+  it("defaults to V'Zot HaBerachah during the gap after Haazinu, not Bereshit", () => {
+    // 2026: Haazinu falls 2026-09-19, Bereshit not until 2026-10-10 — the
+    // Sukkot/Simchat Torah weeks in between are blank in the schedule.
+    for (const iso of ['2026-09-21', '2026-09-26', '2026-10-01', '2026-10-03']) {
+      const reading = readingForDate(d(iso), 'diaspora');
+      expect(reading?.slug, iso).toBe('vzot-haberachah');
+      expect(reading?.isUpcoming, iso).toBe(true);
+    }
+  });
+
+  it('still resolves Haazinu itself and Bereshit correctly around the gap', () => {
+    expect(readingForDate(d('2026-09-19'), 'diaspora')?.slug).toBe('haazinu');
+    expect(readingForDate(d('2026-10-10'), 'diaspora')?.slug).toBe('bereshit');
   });
 });
 
@@ -121,6 +136,16 @@ describe('upcomingReadings', () => {
     expect(list).toHaveLength(5);
     expect(list[0]?.slug).toBe('ki-tavo');
     expect(new Set(list.map((r) => r.slug)).size).toBe(5);
+  });
+
+  it("inserts V'Zot HaBerachah once between Haazinu and Bereshit", () => {
+    const list = upcomingReadings(d('2026-09-19'), 'diaspora', 4);
+    expect(list.map((r) => r.slug)).toEqual(['haazinu', 'vzot-haberachah', 'bereshit', 'noach']);
+  });
+
+  it("still inserts V'Zot HaBerachah when starting mid-gap", () => {
+    const list = upcomingReadings(d('2026-09-27'), 'diaspora', 2);
+    expect(list.map((r) => r.slug)).toEqual(['vzot-haberachah', 'bereshit']);
   });
 });
 

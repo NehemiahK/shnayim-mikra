@@ -22,6 +22,21 @@ const comboBySlug = new Map(COMBOS.map((c) => [c.slug, c]));
 
 const MS_PER_DAY = 86_400_000;
 
+/**
+ * V'Zot HaBerachah is read on Simchat Torah, not a Shabbat, so it never
+ * appears in the weekly schedule — the weeks after Haazinu are just blank
+ * until Bereshit. We treat that whole blank stretch as "V'Zot HaBerachah is
+ * up next" instead of jumping straight to Bereshit.
+ */
+const VZOT_HABERACHAH_SLUG = 'vzot-haberachah';
+
+/** Walks back over blank weeks to find the reading that opened this gap. */
+function gapOwner(schedule: readonly string[], index: number): string | undefined {
+  let i = index - 1;
+  while (i >= 0 && (schedule[i] === undefined || schedule[i] === '')) i--;
+  return i >= 0 ? schedule[i] : undefined;
+}
+
 /** Midnight local time, so date maths never drifts on DST boundaries. */
 function atMidnight(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -66,6 +81,13 @@ export function readingForDate(date: Date, region: Region): WeeklyReading | unde
   const shabbat = shabbatFor(date);
   const start = weekIndex(shabbat);
   if (start < 0) return undefined;
+
+  if (
+    (schedule[start] === undefined || schedule[start] === '') &&
+    gapOwner(schedule, start) === 'haazinu'
+  ) {
+    return { slug: VZOT_HABERACHAH_SLUG, shabbat, isUpcoming: true };
+  }
 
   for (let i = start; i < schedule.length && i < start + 8; i++) {
     const slug = schedule[i];
@@ -125,14 +147,25 @@ export function upcomingReadings(date: Date, region: Region, count: number): Wee
   const out: WeeklyReading[] = [];
   const cursor = shabbatFor(date);
   const schedule = calendar[region];
-  let i = weekIndex(cursor);
+  const startIndex = weekIndex(cursor);
+  let i = startIndex;
+  let vzotEmittedForGap = false;
   while (out.length < count && i < schedule.length) {
     const slug = schedule[i];
-    if (slug !== undefined && slug !== '') {
-      const target = new Date(cursor);
-      target.setDate(target.getDate() + (i - weekIndex(cursor)) * 7);
-      out.push({ slug, shabbat: target, isUpcoming: out.length > 0 });
+    if (slug === undefined || slug === '') {
+      if (!vzotEmittedForGap && gapOwner(schedule, i) === 'haazinu') {
+        const target = new Date(cursor);
+        target.setDate(target.getDate() + (i - startIndex) * 7);
+        out.push({ slug: VZOT_HABERACHAH_SLUG, shabbat: target, isUpcoming: out.length > 0 });
+        vzotEmittedForGap = true;
+      }
+      i++;
+      continue;
     }
+    const target = new Date(cursor);
+    target.setDate(target.getDate() + (i - startIndex) * 7);
+    out.push({ slug, shabbat: target, isUpcoming: out.length > 0 });
+    vzotEmittedForGap = false;
     i++;
   }
   return out;
