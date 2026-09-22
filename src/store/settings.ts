@@ -10,6 +10,13 @@ export type DoubleParshaMode = 'combined' | 'separate';
 /** Where the English translation sits under a verse being read. */
 export type TranslationPlacement = 'off' | 'after' | 'end';
 export type UiLang = 'en' | 'he';
+/**
+ * `bundled` is the self-hosted Noto Serif Hebrew, chosen for offline use and
+ * correct mark positioning in most cases. `system` uses whatever Hebrew font
+ * is already on the reader's device — an escape hatch for the rare word
+ * where a trope mark and a vowel point crowd each other in the bundled font.
+ */
+export type HebrewFont = 'bundled' | 'system';
 
 export interface Settings {
   // What counts as a reading
@@ -22,6 +29,7 @@ export interface Settings {
   doubleParsha: DoubleParshaMode;
   // How the text looks
   hebrewStyle: HebrewStyle;
+  hebrewFont: HebrewFont;
   fontScale: number;
   /**
    * `after` puts the English straight under the Hebrew, before the Targum;
@@ -47,6 +55,7 @@ export const DEFAULT_SETTINGS: Settings = {
   rashiFallbackToOnkelos: true,
   doubleParsha: 'combined',
   hebrewStyle: 'taamim',
+  hebrewFont: 'bundled',
   fontScale: 1,
   translation: 'off',
   rashiEnglish: false,
@@ -95,6 +104,7 @@ export function parseSettings(raw: unknown): Settings {
       typeof v.rashiFallbackToOnkelos === 'boolean' ? v.rashiFallbackToOnkelos : true,
     doubleParsha: pick('doubleParsha', ['combined', 'separate']),
     hebrewStyle: pick('hebrewStyle', ['taamim', 'nikud', 'plain']),
+    hebrewFont: pick('hebrewFont', ['bundled', 'system']),
     fontScale: Math.min(FONT_SCALE_RANGE.max, Math.max(FONT_SCALE_RANGE.min, scale)),
     translation: migrateTranslation(raw),
     rashiEnglish: typeof v.rashiEnglish === 'boolean' ? v.rashiEnglish : false,

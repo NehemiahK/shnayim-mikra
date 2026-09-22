@@ -119,6 +119,25 @@ function AliyahBlockCardImpl({
           );
         })}
       </div>
+
+      {/* Mirrors the header button: an aliyah can run long enough that the
+          header is well off-screen by the time the reader finishes it, and
+          scrolling back up just to mark it done is exactly the friction this
+          avoids. */}
+      <footer className="flex justify-end border-t border-[var(--color-line)] px-4 py-3">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-pressed={done}
+          className={`min-h-11 rounded-lg px-4 text-sm font-medium transition-colors ${
+            done
+              ? 'bg-[var(--color-accent)] text-white'
+              : 'bg-[var(--color-paper)] text-[var(--color-ink)] ring-1 ring-[var(--color-line)]'
+          }`}
+        >
+          {t('done')}
+        </button>
+      </footer>
     </article>
   );
 }
