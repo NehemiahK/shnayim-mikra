@@ -61,16 +61,7 @@ export function Home(): React.JSX.Element {
         }
       />
 
-      {thisWeek && (
-        <WeekCard
-          slug={thisWeek.slug}
-          date={thisWeek.slug === 'vzot-haberachah' ? undefined : thisWeek.shabbat}
-          label={thisWeek.slug === 'vzot-haberachah' ? t('simchatTorah') : t('thisShabbat')}
-          lang={lang}
-          fraction={fractionFor(thisWeek.slug)}
-          cta={fractionFor(thisWeek.slug) > 0 ? t('continueReading') : t('startReading')}
-        />
-      )}
+      {thisWeek && <WeekCard slug={thisWeek.slug} date={thisWeek.shabbat} label={t('thisShabbat')} lang={lang} fraction={fractionFor(thisWeek.slug)} cta={fractionFor(thisWeek.slug) > 0 ? t('continueReading') : t('startReading')} />}
 
       {resumeSlug !== undefined && resumeSlug !== thisWeek?.slug && (
         <section className="mt-4">
@@ -169,7 +160,7 @@ function WeekCard({
   cta,
 }: {
   slug: string;
-  date?: Date | undefined;
+  date: Date;
   label: string;
   lang: string;
   fraction: number;
@@ -185,7 +176,7 @@ function WeekCard({
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">
-            {date ? `${label} · ${formatShabbat(date, lang)}` : label}
+            {label} · {formatShabbat(date, lang)}
           </p>
           <p className="hebrew mt-1 truncate" style={{ lineHeight: 1.4 }}>
             {resolved.nameHe}
