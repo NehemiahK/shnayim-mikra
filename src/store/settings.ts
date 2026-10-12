@@ -11,12 +11,12 @@ export type DoubleParshaMode = 'combined' | 'separate';
 export type TranslationPlacement = 'off' | 'after' | 'end';
 export type UiLang = 'en' | 'he';
 /**
- * `bundled` is the self-hosted Noto Serif Hebrew, chosen for offline use and
- * correct mark positioning in most cases. `system` uses whatever Hebrew font
- * is already on the reader's device — an escape hatch for the rare word
- * where a trope mark and a vowel point crowd each other in the bundled font.
+ * `bundled` is the self-hosted Noto Serif Hebrew. `ezra` is the self-hosted
+ * Ezra SIL, built for biblical text, whose mark positioning keeps a trope and
+ * a vowel point apart where Noto sometimes crowds them. `system` uses whatever
+ * Hebrew font the reader's device already has.
  */
-export type HebrewFont = 'bundled' | 'system';
+export type HebrewFont = 'bundled' | 'ezra' | 'system';
 
 export interface Settings {
   // What counts as a reading
@@ -104,7 +104,7 @@ export function parseSettings(raw: unknown): Settings {
       typeof v.rashiFallbackToOnkelos === 'boolean' ? v.rashiFallbackToOnkelos : true,
     doubleParsha: pick('doubleParsha', ['combined', 'separate']),
     hebrewStyle: pick('hebrewStyle', ['taamim', 'nikud', 'plain']),
-    hebrewFont: pick('hebrewFont', ['bundled', 'system']),
+    hebrewFont: pick('hebrewFont', ['bundled', 'ezra', 'system']),
     fontScale: Math.min(FONT_SCALE_RANGE.max, Math.max(FONT_SCALE_RANGE.min, scale)),
     translation: migrateTranslation(raw),
     rashiEnglish: typeof v.rashiEnglish === 'boolean' ? v.rashiEnglish : false,

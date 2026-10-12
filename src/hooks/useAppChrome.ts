@@ -43,8 +43,8 @@ export function useAppChrome(): void {
 
   useEffect(() => {
     const root = document.documentElement;
-    if (hebrewFont === 'system') {
-      root.style.setProperty('--font-hebrew', 'var(--font-hebrew-system)');
+    if (hebrewFont === 'system' || hebrewFont === 'ezra') {
+      root.style.setProperty('--font-hebrew', `var(--font-hebrew-${hebrewFont})`);
     } else {
       root.style.removeProperty('--font-hebrew');
     }

@@ -2,7 +2,7 @@
  * Build-time data pipeline.
  *
  * Pulls the Torah, Targum Onkelos and Rashi from Sefaria, slices them by parsha
- * and aliyah, precomputes the parsha-by-week calendar, and writes static JSON.
+ * and aliyah, discovers the combined readings, and writes static JSON.
  * The output is committed, so app builds and the running app never touch the
  * network. Re-run with `npm run data:build`.
  */
@@ -29,7 +29,6 @@ import {
   parshaTextSchema,
   rashiTextSchema,
   parshiyotIndexSchema,
-  calendarSchema,
   attributionSchema,
   type Book,
   type Verse,
@@ -471,8 +470,10 @@ async function main(): Promise<void> {
     return slug;
   };
 
-  const diaspora = buildSchedule(false, resolve);
-  const israel = buildSchedule(true, resolve);
+  // The schedule itself is computed at runtime (src/lib/torah-cycle.ts). Walking
+  // hebcal's here is only how the combined readings above get discovered.
+  buildSchedule(false, resolve);
+  buildSchedule(true, resolve);
 
   if (unmatched.size > 0) {
     console.error(`\nCalendar parsha names with no Sefaria match: ${[...unmatched].join(', ')}`);
@@ -543,7 +544,6 @@ async function main(): Promise<void> {
     parshiyot: [...metaBySlug.values()],
     combos: [...combos.values()].sort((a, b) => a.slug.localeCompare(b.slug)),
   });
-  const calendar = calendarSchema.parse({ firstShabbat: iso(firstShabbat()), diaspora, israel });
   const attribution = attributionSchema.parse({
     generatedAt: new Date().toISOString().slice(0, 10),
     editions: [...chosenEditions.values()].map((e) => ({
@@ -571,13 +571,11 @@ async function main(): Promise<void> {
     );
   }
   await writeFile(join(SRC_DATA, 'parshiyot.json'), `${JSON.stringify(index, null, 2)}\n`);
-  await writeFile(join(SRC_DATA, 'calendar.json'), `${JSON.stringify(calendar)}\n`);
   await writeFile(join(SRC_DATA, 'attribution.json'), `${JSON.stringify(attribution, null, 2)}\n`);
 
   const totalVerses = built.reduce((n, b) => n + b.text.verses.length, 0);
   console.log(`\nWrote ${String(built.length)} parshiyot, ${String(totalVerses)} verses.`);
   console.log(`Combined parshiyot: ${[...combos.keys()].join(', ')}`);
-  console.log(`Calendar: ${String(diaspora.length)} weeks from ${iso(firstShabbat())}.`);
 }
 
 main().catch((err: unknown) => {

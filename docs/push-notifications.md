@@ -83,9 +83,9 @@ testable without a Worker.
 ### Reuse, don't reinvent
 
 The Worker can name the parsha with the app's existing `readingForDate()` /
-`resolveParsha()` from `src/lib/calendar.ts`, backed by the committed
-`src/data/calendar.json` and `src/data/parshiyot.json` — wrangler bundles JSON
-imports. One source of truth for what this week's reading is; no schedule logic
+`resolveParsha()` from `src/lib/calendar.ts`, backed by the Hebrew-calendar
+module `src/lib/torah-cycle.ts` and the committed `src/data/parshiyot.json` —
+wrangler bundles JSON imports. One source of truth for what this week's reading is; no schedule logic
 duplicated server-side.
 
 ### Setup that needs account access

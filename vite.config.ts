@@ -35,6 +35,16 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         // Text data is content-addressed by filename (.v1.json) and never mutates.
         runtimeCaching: [
+          // The optional Ezra SIL font is not worth every reader's download, so
+          // it is cached the first time someone picks it, and works offline after.
+          {
+            urlPattern: ({ url }) => url.pathname.endsWith('.woff'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'optional-fonts-v1',
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           {
             urlPattern: ({ url }) => url.pathname.startsWith('/data/'),
             handler: 'CacheFirst',

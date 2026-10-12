@@ -1,26 +1,22 @@
-import calendarData from '../data/calendar.json' with { type: 'json' };
 import indexData from '../data/parshiyot.json' with { type: 'json' };
+import { shabbatReading, type Region } from './torah-cycle.js';
 import type {
   Book,
-  Calendar,
   ComboAliyah,
   ParshaCombo,
   ParshaMeta,
   ParshiyotIndex,
 } from './types.js';
 
-const calendar = calendarData as Calendar;
 const index = indexData as ParshiyotIndex;
 
-export type Region = 'diaspora' | 'israel';
+export type { Region };
 
 export const PARSHIYOT: readonly ParshaMeta[] = index.parshiyot;
 export const COMBOS: readonly ParshaCombo[] = index.combos;
 
 const metaBySlug = new Map(PARSHIYOT.map((p) => [p.slug, p]));
 const comboBySlug = new Map(COMBOS.map((c) => [c.slug, c]));
-
-const MS_PER_DAY = 86_400_000;
 
 /**
  * V'Zot HaBerachah is read on Simchat Torah, not a Shabbat, so it never
@@ -30,21 +26,29 @@ const MS_PER_DAY = 86_400_000;
  */
 const VZOT_HABERACHAH_SLUG = 'vzot-haberachah';
 
+/** How far ahead to look for the next regular reading when festivals displace one. */
+const LOOKAHEAD_WEEKS = 8;
+
 /** Walks back over blank weeks to find the reading that opened this gap. */
-function gapOwner(schedule: readonly string[], index: number): string | undefined {
-  let i = index - 1;
-  while (i >= 0 && (schedule[i] === undefined || schedule[i] === '')) i--;
-  return i >= 0 ? schedule[i] : undefined;
+function gapOwner(shabbat: Date, region: Region): string | undefined {
+  const cursor = new Date(shabbat);
+  for (let i = 0; i < LOOKAHEAD_WEEKS; i++) {
+    cursor.setDate(cursor.getDate() - 7);
+    const slug = shabbatReading(cursor, region);
+    if (slug !== '') return slug;
+  }
+  return undefined;
 }
+
+const addWeeks = (date: Date, weeks: number): Date => {
+  const out = new Date(date);
+  out.setDate(out.getDate() + weeks * 7);
+  return out;
+};
 
 /** Midnight local time, so date maths never drifts on DST boundaries. */
 function atMidnight(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function parseIsoDate(iso: string): Date {
-  const [y, m, d] = iso.split('-').map(Number);
-  return new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1);
 }
 
 export function toIsoDate(date: Date): string {
@@ -56,11 +60,6 @@ export function shabbatFor(date: Date): Date {
   const d = atMidnight(date);
   d.setDate(d.getDate() + ((6 - d.getDay() + 7) % 7));
   return d;
-}
-
-function weekIndex(shabbat: Date): number {
-  const first = parseIsoDate(calendar.firstShabbat);
-  return Math.round((shabbat.getTime() - first.getTime()) / (7 * MS_PER_DAY));
 }
 
 export interface WeeklyReading {
@@ -77,25 +76,16 @@ export interface WeeklyReading {
  * what someone preparing shnayim mikra actually wants.
  */
 export function readingForDate(date: Date, region: Region): WeeklyReading | undefined {
-  const schedule = calendar[region];
   const shabbat = shabbatFor(date);
-  const start = weekIndex(shabbat);
-  if (start < 0) return undefined;
 
-  if (
-    (schedule[start] === undefined || schedule[start] === '') &&
-    gapOwner(schedule, start) === 'haazinu'
-  ) {
+  if (shabbatReading(shabbat, region) === '' && gapOwner(shabbat, region) === 'haazinu') {
     return { slug: VZOT_HABERACHAH_SLUG, shabbat, isUpcoming: true };
   }
 
-  for (let i = start; i < schedule.length && i < start + 8; i++) {
-    const slug = schedule[i];
-    if (slug !== undefined && slug !== '') {
-      const target = new Date(shabbat);
-      target.setDate(target.getDate() + (i - start) * 7);
-      return { slug, shabbat: target, isUpcoming: i !== start };
-    }
+  for (let i = 0; i < LOOKAHEAD_WEEKS; i++) {
+    const target = addWeeks(shabbat, i);
+    const slug = shabbatReading(target, region);
+    if (slug !== '') return { slug, shabbat: target, isUpcoming: i !== 0 };
   }
   return undefined;
 }
@@ -146,27 +136,20 @@ export function readingOrder(slug: string): number {
 export function upcomingReadings(date: Date, region: Region, count: number): WeeklyReading[] {
   const out: WeeklyReading[] = [];
   const cursor = shabbatFor(date);
-  const schedule = calendar[region];
-  const startIndex = weekIndex(cursor);
-  let i = startIndex;
   let vzotEmittedForGap = false;
-  while (out.length < count && i < schedule.length) {
-    const slug = schedule[i];
-    if (slug === undefined || slug === '') {
-      if (!vzotEmittedForGap && gapOwner(schedule, i) === 'haazinu') {
-        const target = new Date(cursor);
-        target.setDate(target.getDate() + (i - startIndex) * 7);
+  // Festival gaps are a few weeks at most, so this bound is generous.
+  for (let week = 0; out.length < count && week < count * 4 + LOOKAHEAD_WEEKS; week++) {
+    const target = addWeeks(cursor, week);
+    const slug = shabbatReading(target, region);
+    if (slug === '') {
+      if (!vzotEmittedForGap && gapOwner(target, region) === 'haazinu') {
         out.push({ slug: VZOT_HABERACHAH_SLUG, shabbat: target, isUpcoming: out.length > 0 });
         vzotEmittedForGap = true;
       }
-      i++;
       continue;
     }
-    const target = new Date(cursor);
-    target.setDate(target.getDate() + (i - startIndex) * 7);
     out.push({ slug, shabbat: target, isUpcoming: out.length > 0 });
     vzotEmittedForGap = false;
-    i++;
   }
   return out;
 }

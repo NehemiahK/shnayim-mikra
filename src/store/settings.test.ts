@@ -73,3 +73,12 @@ describe('coercion generally', () => {
     expect(settings.uiLang).toBe('he');
   });
 });
+
+describe('hebrew font', () => {
+  it('accepts every offered font and falls back to the bundled one otherwise', () => {
+    for (const hebrewFont of ['bundled', 'ezra', 'system'] as const) {
+      expect(parseSettings({ hebrewFont }).hebrewFont).toBe(hebrewFont);
+    }
+    expect(parseSettings({ hebrewFont: 'comic-sans' }).hebrewFont).toBe('bundled');
+  });
+});
