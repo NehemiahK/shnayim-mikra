@@ -97,7 +97,7 @@ npm run dev
 | `npm run lint` | ESLint |
 | `npm run size` | Enforce the performance budget |
 | `npm run data:build` | Re-fetch the corpus from Sefaria |
-| `npm run fonts:build` | Re-fetch the self-hosted Noto Serif Hebrew (Ezra SIL, the optional alternative, is the unmodified SIL web build in `public/fonts/`, OFL 1.1) |
+| `npm run fonts:build` | Re-fetch the self-hosted Noto Serif Hebrew (Ezra SIL, the default reading font, is the unmodified SIL web build in `public/fonts/`, OFL 1.1) |
 
 Node 22 (see `.nvmrc`) — run `nvm use` if your shell defaults to an older version. TypeScript runs with `strict`, `noUncheckedIndexedAccess`, and `exactOptionalPropertyTypes`.
 

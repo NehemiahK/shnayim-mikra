@@ -14,26 +14,31 @@
 
 /* Ezra SIL: the official, unmodified SIL web build (OFL 1.1 — see
    public/fonts/ezra-sil-LICENSE.txt). Designed for biblical text, so its mark
-   positioning keeps vowels and cantillation apart. Only fetched when chosen. */
+   positioning keeps vowels and cantillation apart: where a letter carries two
+   marks below (a segol and a munach, a patach and a meteg), Noto Serif Hebrew
+   draws them on top of each other and Ezra sets them side by side. That is why
+   it is the default. Limited to Hebrew so any Latin falls through to Noto. */
 @font-face {
   font-family: 'Ezra SIL';
   src: url('/fonts/ezra-sil.woff') format('woff');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0590-05FF, U+200C-2010, U+25CC, U+FB1D-FB4F;
 }
 
 /* Alternatives chosen in Settings > Hebrew font. Plain :root, not @theme:
    Tailwind drops theme variables nothing in the CSS references, and these are
-   only ever referenced from JS. The system stack skips the bundled font so the
+   only ever referenced from JS. The system stack skips the bundled fonts so the
    reader's own device font is used. */
 :root {
-  --font-hebrew-ezra: 'Ezra SIL', 'Noto Serif Hebrew', serif;
+  --font-hebrew-noto: 'Noto Serif Hebrew', 'Taamey Frank CLM', 'SBL Hebrew', 'David Libre',
+    'Times New Roman', serif;
   --font-hebrew-system: 'Taamey Frank CLM', 'SBL Hebrew', 'David Libre', 'Times New Roman', serif;
 }
 
 @theme {
-  --font-hebrew: 'Noto Serif Hebrew', 'Taamey Frank CLM', 'SBL Hebrew', 'David Libre',
+  --font-hebrew: 'Ezra SIL', 'Noto Serif Hebrew', 'Taamey Frank CLM', 'SBL Hebrew', 'David Libre',
     'Times New Roman', serif;
   --font-ui: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 

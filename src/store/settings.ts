@@ -11,12 +11,12 @@ export type DoubleParshaMode = 'combined' | 'separate';
 export type TranslationPlacement = 'off' | 'after' | 'end';
 export type UiLang = 'en' | 'he';
 /**
- * `bundled` is the self-hosted Noto Serif Hebrew. `ezra` is the self-hosted
- * Ezra SIL, built for biblical text, whose mark positioning keeps a trope and
- * a vowel point apart where Noto sometimes crowds them. `system` uses whatever
- * Hebrew font the reader's device already has.
+ * `ezra` is the self-hosted Ezra SIL, built for biblical text, whose mark
+ * positioning keeps a trope and a vowel point apart where Noto draws them on
+ * top of each other. `noto` is the self-hosted Noto Serif Hebrew. `system`
+ * uses whatever Hebrew font the reader's device already has.
  */
-export type HebrewFont = 'bundled' | 'ezra' | 'system';
+export type HebrewFont = 'ezra' | 'noto' | 'system';
 
 export interface Settings {
   // What counts as a reading
@@ -55,7 +55,7 @@ export const DEFAULT_SETTINGS: Settings = {
   rashiFallbackToOnkelos: true,
   doubleParsha: 'combined',
   hebrewStyle: 'taamim',
-  hebrewFont: 'bundled',
+  hebrewFont: 'ezra',
   fontScale: 1,
   translation: 'off',
   rashiEnglish: false,
@@ -104,7 +104,10 @@ export function parseSettings(raw: unknown): Settings {
       typeof v.rashiFallbackToOnkelos === 'boolean' ? v.rashiFallbackToOnkelos : true,
     doubleParsha: pick('doubleParsha', ['combined', 'separate']),
     hebrewStyle: pick('hebrewStyle', ['taamim', 'nikud', 'plain']),
-    hebrewFont: pick('hebrewFont', ['bundled', 'ezra', 'system']),
+    // Noto was the default until Ezra SIL replaced it, stored as `bundled`.
+    // Every change saves the whole object, so `bundled` almost always means the
+    // reader never chose a font; it falls through to the new default.
+    hebrewFont: pick('hebrewFont', ['ezra', 'noto', 'system']),
     fontScale: Math.min(FONT_SCALE_RANGE.max, Math.max(FONT_SCALE_RANGE.min, scale)),
     translation: migrateTranslation(raw),
     rashiEnglish: typeof v.rashiEnglish === 'boolean' ? v.rashiEnglish : false,

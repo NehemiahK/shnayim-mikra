@@ -61,7 +61,7 @@ test.describe('offline', () => {
 
   test('serves the Hebrew font it preloads', async ({ page }) => {
     await page.goto('/');
-    const res = await page.request.get('/fonts/noto-serif-hebrew.woff2');
+    const res = await page.request.get('/fonts/ezra-sil.woff');
     expect(res.ok()).toBe(true);
     expect(Number(res.headers()['content-length'] ?? 0)).toBeGreaterThan(1000);
   });
