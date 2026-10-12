@@ -13,7 +13,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'fonts/*.woff2'],
+      includeAssets: ['favicon.svg', 'fonts/*.woff2', 'fonts/*.woff'],
       manifest: {
         name: 'Shnayim Mikra',
         short_name: 'Shnayim',
@@ -32,19 +32,9 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,woff,woff2}'],
         // Text data is content-addressed by filename (.v1.json) and never mutates.
         runtimeCaching: [
-          // The optional Ezra SIL font is not worth every reader's download, so
-          // it is cached the first time someone picks it, and works offline after.
-          {
-            urlPattern: ({ url }) => url.pathname.endsWith('.woff'),
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'optional-fonts-v1',
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
           {
             urlPattern: ({ url }) => url.pathname.startsWith('/data/'),
             handler: 'CacheFirst',

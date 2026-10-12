@@ -75,10 +75,14 @@ describe('coercion generally', () => {
 });
 
 describe('hebrew font', () => {
-  it('accepts every offered font and falls back to the bundled one otherwise', () => {
-    for (const hebrewFont of ['bundled', 'ezra', 'system'] as const) {
+  it('accepts every offered font and falls back to Ezra SIL otherwise', () => {
+    for (const hebrewFont of ['ezra', 'noto', 'system'] as const) {
       expect(parseSettings({ hebrewFont }).hebrewFont).toBe(hebrewFont);
     }
-    expect(parseSettings({ hebrewFont: 'comic-sans' }).hebrewFont).toBe('bundled');
+    expect(parseSettings({ hebrewFont: 'comic-sans' }).hebrewFont).toBe('ezra');
+  });
+
+  it('moves readers stored on the old Noto default to Ezra SIL', () => {
+    expect(parseSettings({ hebrewFont: 'bundled' }).hebrewFont).toBe('ezra');
   });
 });
