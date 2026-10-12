@@ -119,17 +119,6 @@ export interface ParshiyotIndex {
   combos: ParshaCombo[];
 }
 
-/**
- * Parsha-by-week lookup. `diaspora`/`israel` are dense: index N is the Shabbat
- * N weeks after `firstShabbat`. An empty string means a festival displaced the
- * weekly reading.
- */
-export interface Calendar {
-  firstShabbat: string;
-  diaspora: string[];
-  israel: string[];
-}
-
 export interface Attribution {
   generatedAt: string;
   editions: { role: string; title: string; license: string; language: string }[];

@@ -120,6 +120,7 @@ export function Settings(): React.JSX.Element {
             onChange={(v) => { set('hebrewFont', v); }}
             options={[
               { value: 'bundled', label: t('hebrewFontBundled') },
+              { value: 'ezra', label: t('hebrewFontEzra') },
               { value: 'system', label: t('hebrewFontSystem') },
             ]}
           />

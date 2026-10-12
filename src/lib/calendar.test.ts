@@ -71,8 +71,10 @@ describe('readingForDate', () => {
     }
   });
 
-  it('returns undefined before the table begins', () => {
-    expect(readingForDate(d('2010-01-01'), 'diaspora')).toBeUndefined();
+  it('is not limited to any precomputed range', () => {
+    expect(readingForDate(d('2010-01-01'), 'diaspora')?.slug).toBeDefined();
+    expect(readingForDate(d('2075-06-15'), 'israel')?.slug).toBeDefined();
+    expect(readingForDate(d('2400-01-01'), 'diaspora')?.slug).toBeDefined();
   });
 
   it("defaults to V'Zot HaBerachah during the gap after Haazinu, not Bereshit", () => {

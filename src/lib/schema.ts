@@ -10,7 +10,6 @@ import { BOOKS } from './types.js';
 import type {
   Aliyah,
   Attribution,
-  Calendar,
   ComboAliyah,
   ParshaCombo,
   ParshaMeta,
@@ -97,12 +96,6 @@ export const parshiyotIndexSchema = z.object({
   combos: z.array(parshaComboSchema).min(1),
 });
 
-export const calendarSchema = z.object({
-  firstShabbat: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  diaspora: z.array(z.string()),
-  israel: z.array(z.string()),
-});
-
 export const attributionSchema = z.object({
   generatedAt: z.string(),
   editions: z.array(
@@ -133,6 +126,5 @@ export const __schemaConformance = {
   comboAliyah: true as Conforms<typeof comboAliyahSchema, ComboAliyah>,
   parshaCombo: true as Conforms<typeof parshaComboSchema, ParshaCombo>,
   parshiyotIndex: true as Conforms<typeof parshiyotIndexSchema, ParshiyotIndex>,
-  calendar: true as Conforms<typeof calendarSchema, Calendar>,
   attribution: true as Conforms<typeof attributionSchema, Attribution>,
 } as const;

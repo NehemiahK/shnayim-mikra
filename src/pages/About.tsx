@@ -29,6 +29,8 @@ export function About(): React.JSX.Element {
         ))}
       </Section>
 
+      <p className="mb-4 text-xs text-[var(--color-muted)]">{t('fontCredit')}</p>
+
       <p className="mb-6 text-sm text-[var(--color-muted)]">{t('progressLocal')}</p>
 
       <a

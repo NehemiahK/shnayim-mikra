@@ -14,7 +14,7 @@ That decision buys a lot:
 - Rashi is a separate chunk, downloaded only when a reader actually expands it.
 - No rate limits, no CORS, no outage to inherit, no server to pay for.
 - Offline works by default — there is nothing dynamic to be offline *from*.
-- Which parsha falls on which Shabbat is precomputed for 25 years into a lookup table, so no calendar library ships to the browser either.
+- Which parsha falls on which Shabbat is computed from the Hebrew calendar by a small module (`src/lib/torah-cycle.ts`, no library, so it never runs out of years). The tests check it against hebcal for every Shabbat from 1950 to 2150, in Israel and the diaspora.
 
 The whole app is 78 KB of JavaScript, gzipped.
 
@@ -97,7 +97,7 @@ npm run dev
 | `npm run lint` | ESLint |
 | `npm run size` | Enforce the performance budget |
 | `npm run data:build` | Re-fetch the corpus from Sefaria |
-| `npm run fonts:build` | Re-fetch the self-hosted Hebrew font |
+| `npm run fonts:build` | Re-fetch the self-hosted Noto Serif Hebrew (Ezra SIL, the optional alternative, is the unmodified SIL web build in `public/fonts/`, OFL 1.1) |
 
 Node 22 (see `.nvmrc`) — run `nvm use` if your shell defaults to an older version. TypeScript runs with `strict`, `noUncheckedIndexedAccess`, and `exactOptionalPropertyTypes`.
 
@@ -129,7 +129,7 @@ domain, so attaching a custom one later needs no code change.
 
 ## A note on V'Zot HaBerachah
 
-It is read on Simchat Torah, a festival, so it never falls on a regular Shabbat and never appears in the weekly schedule. It is still browsable and readable from the parsha list, since people do read it beforehand. The calendar tests assert both halves of this.
+It is read on Simchat Torah, a festival, so it never falls on a regular Shabbat and never appears in the weekly schedule. It is still browsable and readable from the parsha list, since people do read it beforehand. The calendar tests assert both halves of this. In the weeks between Haazinu and Bereshit the home page offers it as the reading to prepare.
 
 ## License
 

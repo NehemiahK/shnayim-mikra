@@ -6,7 +6,6 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
-  calendarSchema,
   parshaTextSchema,
   parshiyotIndexSchema,
   rashiTextSchema,
@@ -24,7 +23,6 @@ const RASHI_DIR = join(ROOT, 'public/data/rashi');
 const readJson = (path: string): unknown => JSON.parse(readFileSync(path, 'utf8'));
 
 const index = parshiyotIndexSchema.parse(readJson(join(ROOT, 'src/data/parshiyot.json')));
-const calendar = calendarSchema.parse(readJson(join(ROOT, 'src/data/calendar.json')));
 const parshaFiles = readdirSync(PARSHA_DIR).filter((f) => f.endsWith('.json'));
 const texts = new Map<string, ParshaText>(
   parshaFiles.map((f) => {
@@ -256,48 +254,10 @@ describe('combined parshiyot', () => {
   });
 });
 
-describe('calendar', () => {
-  it('is dense and covers both regions equally', () => {
-    expect(calendar.diaspora.length).toBe(calendar.israel.length);
-    expect(calendar.diaspora.length).toBeGreaterThan(1000);
-  });
-
-  it('only ever names known readings', () => {
-    const known = new Set([
-      ...index.parshiyot.map((p) => p.slug),
-      ...index.combos.map((c) => c.slug),
-      '',
-    ]);
-    for (const region of ['diaspora', 'israel'] as const) {
-      for (const slug of calendar[region]) {
-        expect(known.has(slug), `unknown reading "${slug}" in ${region}`).toBe(true);
-      }
-    }
-  });
-
-  it('diverges between Israel and the diaspora at least once', () => {
-    const differences = calendar.diaspora.filter((slug, i) => slug !== calendar.israel[i]);
-    expect(differences.length).toBeGreaterThan(0);
-  });
-
-  it('reads all 53 Shabbat parshiyot within a 60-week window', () => {
-    const window = calendar.diaspora.slice(0, 60).filter((s) => s !== '');
-    const covered = new Set<string>();
-    for (const slug of window) {
-      const combo = index.combos.find((c) => c.slug === slug);
-      if (combo) combo.parts.forEach((p) => covered.add(p));
-      else covered.add(slug);
-    }
-    // V'Zot HaBerachah is read on Simchat Torah, a festival, so it never falls
-    // on a regular Shabbat and never appears in the weekly schedule.
-    expect(covered.size).toBe(53);
-    expect(covered.has('vzot-haberachah')).toBe(false);
-  });
-
-  it('leaves V\'Zot HaBerachah readable even though it is never scheduled', () => {
-    const scheduled = new Set(calendar.diaspora.concat(calendar.israel));
-    expect(scheduled.has('vzot-haberachah')).toBe(false);
-    // It must still exist as browsable text — people read it before Simchat Torah.
+describe('V\'Zot HaBerachah', () => {
+  it('is browsable text even though it is never a regular Shabbat reading', () => {
+    // People read it before Simchat Torah; the calendar tests assert it is
+    // never scheduled on a Shabbat.
     expect(index.parshiyot.some((p) => p.slug === 'vzot-haberachah')).toBe(true);
     expect(texts.has('vzot-haberachah')).toBe(true);
   });
