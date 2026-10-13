@@ -171,21 +171,38 @@ export function parseUrlSettings(search: string): Partial<Settings> {
 }
 
 export const useSettings = create<SettingsStore>((set) => {
-  const stored = parseSettings(readJson<unknown>(KEY, {}));
-  // URL params override stored settings for this session only
+  let persisted = parseSettings(readJson<unknown>(KEY, {}));
+  // URL params override stored settings for this session only.
+  // They are tracked separately so they never leak into persisted prefs —
+  // unless the user explicitly changes that setting, which releases it.
   const urlOverrides =
     typeof window !== 'undefined' ? parseUrlSettings(window.location.search) : {};
+  const urlKeys = new Set(Object.keys(urlOverrides) as (keyof Settings)[]);
+  const applyOverrides = (base: Settings): Settings => ({ ...base, ...urlOverrides });
+
   return {
-    settings: { ...stored, ...urlOverrides },
+    settings: applyOverrides(persisted),
     set: (key, value) =>
       set((state) => {
-        const settings = parseSettings({ ...state.settings, [key]: value });
-        writeJson(KEY, settings);
-        return { settings };
+        // An explicit user change releases the key from URL control.
+        if (urlKeys.has(key)) {
+          urlKeys.delete(key);
+          delete urlOverrides[key];
+        }
+        const merged = parseSettings({ ...state.settings, [key]: value });
+        // Persist everything except keys still under URL control.
+        const toPersist = { ...merged };
+        for (const k of urlKeys) {
+          toPersist[k] = persisted[k];
+        }
+        persisted = parseSettings(toPersist);
+        writeJson(KEY, persisted);
+        return { settings: applyOverrides(persisted) };
       }),
     reset: () => {
-      writeJson(KEY, DEFAULT_SETTINGS);
-      return set({ settings: DEFAULT_SETTINGS });
+      persisted = { ...DEFAULT_SETTINGS };
+      writeJson(KEY, persisted);
+      return set({ settings: applyOverrides(persisted) });
     },
   };
 });
