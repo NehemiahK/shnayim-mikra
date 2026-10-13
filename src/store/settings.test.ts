@@ -121,3 +121,11 @@ describe('URL param overrides', () => {
     expect(result).toEqual({ targum: 'rashi', uiLang: 'he', structure: 'aliyah' });
   });
 });
+
+describe('URL overrides do not leak into persisted settings', () => {
+  it('parseUrlSettings extracts only valid values', () => {
+    // Invalid values are ignored entirely
+    expect(parseUrlSettings('?targum=talmud')).toEqual({});
+    expect(parseUrlSettings('?lang=fr&reps=9')).toEqual({});
+  });
+});
