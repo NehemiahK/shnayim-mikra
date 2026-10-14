@@ -24,12 +24,15 @@ interface ReadingSessionProps {
   title: string;
   /** Present only for a combined week; the seven aliyot it is read with. */
   comboAliyot?: ComboAliyah[] | undefined;
+  /** 1-based aliyah number to jump to on load (from ?aliyah=N URL param). */
+  initialAliyah?: number | undefined;
 }
 
 export function ReadingSession({
   parts: rawParts,
   title,
   comboAliyot,
+  initialAliyah,
 }: ReadingSessionProps): React.JSX.Element {
   const { t, lang } = useT();
   const settings = useSettings((s) => s.settings);
@@ -200,6 +203,21 @@ export function ReadingSession({
     },
     [units],
   );
+
+  // Jump to the aliyah from ?aliyah=N once units are loaded.
+  // Runs once: after jumping, clear the ref so it doesn't re-trigger.
+  const jumpedRef = useRef(false);
+  useEffect(() => {
+    if (jumpedRef.current || !initialAliyah || units.length === 0) return;
+    // aliyahKey format: find the key for the Nth aliyah
+    const keys = [...new Set(units.map((u) => u.aliyahKey))];
+    const targetKey = keys[initialAliyah - 1];
+    if (targetKey) {
+      jumpedRef.current = true;
+      // Small delay to let the DOM settle
+      setTimeout(() => jump(targetKey), 100);
+    }
+  }, [units, initialAliyah, jump]);
 
   return (
     <div>
