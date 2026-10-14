@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { DEFAULT_SETTINGS, parseSettings, useSettings, __resetSettingsForTest } from './settings.js';
+import { DEFAULT_SETTINGS, parseSettings, parseUrlSettings, useSettings, __resetSettingsForTest } from './settings.js';
 import { clearMemory } from '../lib/storage.js';
 
 beforeEach(() => {
@@ -84,5 +84,48 @@ describe('hebrew font', () => {
 
   it('moves readers stored on the old Noto default to Ezra SIL', () => {
     expect(parseSettings({ hebrewFont: 'bundled' }).hebrewFont).toBe('ezra');
+  });
+});
+
+describe('URL param overrides', () => {
+  it('parses targum param', () => {
+    expect(parseUrlSettings('?targum=rashi').targum).toBe('rashi');
+    expect(parseUrlSettings('?targum=onkelos').targum).toBe('onkelos');
+    expect(parseUrlSettings('?targum=both').targum).toBe('both');
+    expect(parseUrlSettings('?targum=nonsense').targum).toBeUndefined();
+  });
+
+  it('parses lang param', () => {
+    expect(parseUrlSettings('?lang=he').uiLang).toBe('he');
+    expect(parseUrlSettings('?lang=en').uiLang).toBe('en');
+    expect(parseUrlSettings('?lang=fr').uiLang).toBeUndefined();
+  });
+
+  it('parses structure and reps params', () => {
+    expect(parseUrlSettings('?structure=aliyah').structure).toBe('aliyah');
+    expect(parseUrlSettings('?reps=1').mikraRepetitions).toBe(1);
+    expect(parseUrlSettings('?reps=5').mikraRepetitions).toBeUndefined();
+  });
+
+  it('parses theme param', () => {
+    expect(parseUrlSettings('?theme=dark').theme).toBe('dark');
+    expect(parseUrlSettings('?theme=nonsense').theme).toBeUndefined();
+  });
+
+  it('returns empty object for no params', () => {
+    expect(parseUrlSettings('')).toEqual({});
+  });
+
+  it('combines multiple params', () => {
+    const result = parseUrlSettings('?targum=rashi&lang=he&structure=aliyah');
+    expect(result).toEqual({ targum: 'rashi', uiLang: 'he', structure: 'aliyah' });
+  });
+});
+
+describe('URL overrides do not leak into persisted settings', () => {
+  it('parseUrlSettings extracts only valid values', () => {
+    // Invalid values are ignored entirely
+    expect(parseUrlSettings('?targum=talmud')).toEqual({});
+    expect(parseUrlSettings('?lang=fr&reps=9')).toEqual({});
   });
 });

@@ -125,19 +125,87 @@ interface SettingsStore {
   reset(): void;
 }
 
-export const useSettings = create<SettingsStore>((set) => ({
-  settings: parseSettings(readJson<unknown>(KEY, {})),
-  set: (key, value) =>
-    set((state) => {
-      const settings = parseSettings({ ...state.settings, [key]: value });
-      writeJson(KEY, settings);
-      return { settings };
-    }),
-  reset: () => {
-    writeJson(KEY, DEFAULT_SETTINGS);
-    return set({ settings: DEFAULT_SETTINGS });
-  },
-}));
+/**
+ * Reads URL search params (e.g. ?targum=rashi&lang=he) and returns them as
+ * partial settings overrides. These are per-link and never persisted —
+ * they let a link open the reader with specific settings without changing
+ * the user's saved preferences.
+ *
+ * Supported params:
+ * - targum: onkelos | rashi | both
+ * - lang: en | he (UI language)
+ * - structure: verse | aliyah
+ * - reps: 1 | 2 | 3 (mikra repetitions)
+ * - theme: light | dark | system
+ */
+export function parseUrlSettings(search: string): Partial<Settings> {
+  const params = new URLSearchParams(search);
+  const overrides: Partial<Settings> = {};
+
+  const targum = params.get('targum');
+  if (targum === 'onkelos' || targum === 'rashi' || targum === 'both') {
+    overrides.targum = targum;
+  }
+
+  const lang = params.get('lang');
+  if (lang === 'en' || lang === 'he') {
+    overrides.uiLang = lang;
+  }
+
+  const structure = params.get('structure');
+  if (structure === 'verse' || structure === 'aliyah') {
+    overrides.structure = structure;
+  }
+
+  const reps = params.get('reps');
+  if (reps === '1' || reps === '2' || reps === '3') {
+    overrides.mikraRepetitions = Number(reps);
+  }
+
+  const theme = params.get('theme');
+  if (theme === 'light' || theme === 'dark' || theme === 'system') {
+    overrides.theme = theme;
+  }
+
+  return overrides;
+}
+
+export const useSettings = create<SettingsStore>((set) => {
+  let persisted = parseSettings(readJson<unknown>(KEY, {}));
+  // URL params override stored settings for this session only.
+  // They are tracked separately so they never leak into persisted prefs —
+  // unless the user explicitly changes that setting, which releases it.
+  const urlOverrides =
+    typeof window !== 'undefined' ? parseUrlSettings(window.location.search) : {};
+  const urlKeys = new Set(Object.keys(urlOverrides) as (keyof Settings)[]);
+  const applyOverrides = (base: Settings): Settings => ({ ...base, ...urlOverrides });
+
+  return {
+    settings: applyOverrides(persisted),
+    set: (key, value) =>
+      set((state) => {
+        // An explicit user change releases the key from URL control.
+        if (urlKeys.has(key)) {
+          urlKeys.delete(key);
+          delete urlOverrides[key];
+        }
+        const merged = parseSettings({ ...state.settings, [key]: value });
+        // Persist everything except keys still under URL control.
+        const toPersist = { ...merged };
+        for (const k of urlKeys) {
+          toPersist[k] = persisted[k];
+        }
+        persisted = parseSettings(toPersist);
+        writeJson(KEY, persisted);
+        return { settings: applyOverrides(persisted) };
+      }),
+    reset: () => {
+      persisted = { ...DEFAULT_SETTINGS };
+      writeJson(KEY, persisted);
+      return set({ settings: applyOverrides(persisted) });
+    },
+  };
+});
 
 /** Exposed for tests, which need a clean store per case. */
 export function __resetSettingsForTest(): void {
