@@ -13,6 +13,13 @@ type LoadState =
   | { status: 'error' }
   | { status: 'ready'; parts: ParshaText[] };
 
+/** Parses ?aliyah=N (1-7) from the URL. Returns undefined if absent/invalid. */
+function parseAliyahParam(): number | undefined {
+  if (typeof window === 'undefined') return undefined;
+  const n = Number(new URLSearchParams(window.location.search).get('aliyah'));
+  return Number.isInteger(n) && n >= 1 && n <= 7 ? n : undefined;
+}
+
 export function Reader({ slug }: { slug: string }): React.JSX.Element {
   const { t } = useT();
   const open = useProgress((s) => s.open);
@@ -90,6 +97,7 @@ export function Reader({ slug }: { slug: string }): React.JSX.Element {
           parts={state.parts}
           title={resolved.nameEn}
           comboAliyot={resolved.comboAliyot}
+          initialAliyah={parseAliyahParam()}
         />
       )}
     </Page>
